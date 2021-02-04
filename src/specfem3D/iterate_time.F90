@@ -56,7 +56,6 @@
   real(kind=CUSTOM_REAL) :: epsilon_xx,epsilon_yy,epsilon_zz,epsilon_xy,epsilon_xz,epsilon_yz 
   real(kind=CUSTOM_REAL) :: nepsilon_cm
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,NSPEC_CRUST_MANTLE_STR_OR_ATT) :: nepsilon_max_cm,nsigma_max_cm
-  character(len=MAX_STRING_LEN) :: nepsfile_cm,nsigmafile_cm
 
 
   ! for EXACT_UNDOING_TO_DISK
