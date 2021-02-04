@@ -249,19 +249,21 @@
           duzdyl_plus_duydzl = duzdyl + duydzl
 
           ! compute deviatoric strain
-          templ = ONE_THIRD * (duxdxl + duydyl + duzdzl)
-          if (NSPEC_CRUST_MANTLE_STRAIN_ONLY == 1) then
-            if (ispec == 1) then
-              epsilon_trace_over_3(i,j,k,1) = templ
+		  if (COMPUTE_AND_STORE_STRAIN) then
+            templ = ONE_THIRD * (duxdxl + duydyl + duzdzl)
+            if (NSPEC_CRUST_MANTLE_STRAIN_ONLY == 1) then
+              if (ispec == 1) then
+                epsilon_trace_over_3(i,j,k,1) = templ
+              endif
+            else
+              epsilon_trace_over_3(i,j,k,ispec) = templ
             endif
-          else
-            epsilon_trace_over_3(i,j,k,ispec) = templ
-          endif
-          epsilondev_loc(i,j,k,1) = duxdxl - templ
-          epsilondev_loc(i,j,k,2) = duydyl - templ
-          epsilondev_loc(i,j,k,3) = 0.5 * duxdyl_plus_duydxl
-          epsilondev_loc(i,j,k,4) = 0.5 * duzdxl_plus_duxdzl
-          epsilondev_loc(i,j,k,5) = 0.5 * duzdyl_plus_duydzl
+            epsilondev_loc(i,j,k,1) = duxdxl - templ
+            epsilondev_loc(i,j,k,2) = duydyl - templ
+            epsilondev_loc(i,j,k,3) = 0.5 * duxdyl_plus_duydxl
+            epsilondev_loc(i,j,k,4) = 0.5 * duzdxl_plus_duxdzl
+            epsilondev_loc(i,j,k,5) = 0.5 * duzdyl_plus_duydzl
+	      endif		
 
           ! precompute terms for attenuation if needed
           !if (ATTENUATION_VAL) then
@@ -613,17 +615,19 @@
     endif
 
     ! save deviatoric strain for Runge-Kutta scheme
-    do k = 1,NGLLZ
-      do j = 1,NGLLY
-        do i = 1,NGLLX
-          epsilondev_xx(i,j,k,ispec) = epsilondev_loc(i,j,k,1)
-          epsilondev_yy(i,j,k,ispec) = epsilondev_loc(i,j,k,2)
-          epsilondev_xy(i,j,k,ispec) = epsilondev_loc(i,j,k,3)
-          epsilondev_xz(i,j,k,ispec) = epsilondev_loc(i,j,k,4)
-          epsilondev_yz(i,j,k,ispec) = epsilondev_loc(i,j,k,5)
+	if (COMPUTE_AND_STORE_STRAIN) then
+      do k = 1,NGLLZ
+        do j = 1,NGLLY
+          do i = 1,NGLLX
+            epsilondev_xx(i,j,k,ispec) = epsilondev_loc(i,j,k,1)
+            epsilondev_yy(i,j,k,ispec) = epsilondev_loc(i,j,k,2)
+            epsilondev_xy(i,j,k,ispec) = epsilondev_loc(i,j,k,3)
+            epsilondev_xz(i,j,k,ispec) = epsilondev_loc(i,j,k,4)
+            epsilondev_yz(i,j,k,ispec) = epsilondev_loc(i,j,k,5)
+          enddo
         enddo
       enddo
-    enddo
+	endif
 
 
   enddo   ! spectral element loop NSPEC_CRUST_MANTLE

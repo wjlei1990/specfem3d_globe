@@ -1,6 +1,6 @@
 !=====================================================================
 !
-!          S p e c f e m 3 D  G l o b e  V e r s i o n  8 . 0
+!          S p e c f e m 3 D  G l o b e  V e r s i o n  7 . 0
 !          --------------------------------------------------
 !
 !     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
@@ -48,28 +48,6 @@
   ! and also takes care of the main output
   call world_size(sizeprocs)
   call world_rank(myrank)
-
-  ! Cray compilers
-#if _CRAYFTN
-#warning "Warning: using Cray compiler assign function for un-compressed file output"
-  ! Cray uses compressed formats by default for list-directed output, for example:
-  !     write(*,*) 10,10            leads to output -> 2*10           compressed, instead of:       10        10
-  !     write(*,*) 1,1.78e-5                        -> 1,   1.78e-5   comma delimiter, instead of:   1         1.78e-5
-  ! this leads to problems when writing seismograms in ASCII-format.
-  ! to circumvent this behaviour, one can use cray's assign environment:
-  !   $ setenv FILENV ASGTMP
-  !   $ assign -U on g:all        (g:all  - all file open requests)
-  ! see: https://pubs.cray.com/bundle/Cray_Fortran_Reference_Manual_100_S-3901_Fortran_ditaval.xml/..
-  !             ..page/Cray_Fortran_Implementation_Specifics.html
-  ! or use the Fortran statement here below:
-
-  !debug
-  !if (myrank == 0) print *,'...compiled by Cray compilers'
-
-  ! assigns -U (uncompressed format) for all subsequent file opens
-  ! includes seismograms, but not the already opened files
-  call assign('assign -U on g:all',ier)
-#endif
 
   ! open main output file, only written to by process 0
   if (myrank == 0) then
@@ -236,13 +214,16 @@
   endif
 
   ! define strain storage
+  ! Set strain storage to always be true, since we need to keep track the norms of the strain and stress
+  
   ! this cannot be made a constant stored in values_from_mesher.h because it depends on SIMULATION_TYPE
-  if (ATTENUATION_VAL .or. SIMULATION_TYPE /= 1 .or. SAVE_FORWARD &
-    .or. (MOVIE_VOLUME .and. SIMULATION_TYPE /= 3)) then
-    COMPUTE_AND_STORE_STRAIN = .true.
-  else
-    COMPUTE_AND_STORE_STRAIN = .false.
-  endif
+  !if (ATTENUATION_VAL .or. SIMULATION_TYPE /= 1 .or. SAVE_FORWARD &
+  !  .or. (MOVIE_VOLUME .and. SIMULATION_TYPE /= 3)) then
+  COMPUTE_AND_STORE_STRAIN = .true.
+  !else
+  !  COMPUTE_AND_STORE_STRAIN = .false.
+  !endif
+  
 
   ! checks flags
   call initialize_simulation_check()
