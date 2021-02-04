@@ -214,15 +214,13 @@
   endif
 
   ! define strain storage
-  ! Set strain storage to always be true, since we need to keep track the norms of the strain and stress
-  
   ! this cannot be made a constant stored in values_from_mesher.h because it depends on SIMULATION_TYPE
-  !if (ATTENUATION_VAL .or. SIMULATION_TYPE /= 1 .or. SAVE_FORWARD &
-  !  .or. (MOVIE_VOLUME .and. SIMULATION_TYPE /= 3)) then
-  COMPUTE_AND_STORE_STRAIN = .true.
-  !else
-  !  COMPUTE_AND_STORE_STRAIN = .false.
-  !endif
+  if (ATTENUATION_VAL .or. SIMULATION_TYPE /= 1 .or. SAVE_FORWARD &
+    .or. (MOVIE_VOLUME .and. SIMULATION_TYPE /= 3)) then
+    COMPUTE_AND_STORE_STRAIN = .true.
+  else
+    COMPUTE_AND_STORE_STRAIN = .false.
+  endif
   
 
   ! checks flags

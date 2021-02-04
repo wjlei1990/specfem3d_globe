@@ -249,7 +249,7 @@
           duzdyl_plus_duydzl = duzdyl + duydzl
 
           ! compute deviatoric strain
-		  if (COMPUTE_AND_STORE_STRAIN) then
+		  !if (COMPUTE_AND_STORE_STRAIN) then
             templ = ONE_THIRD * (duxdxl + duydyl + duzdzl)
             if (NSPEC_CRUST_MANTLE_STRAIN_ONLY == 1) then
               if (ispec == 1) then
@@ -263,7 +263,7 @@
             epsilondev_loc(i,j,k,3) = 0.5 * duxdyl_plus_duydxl
             epsilondev_loc(i,j,k,4) = 0.5 * duzdxl_plus_duxdzl
             epsilondev_loc(i,j,k,5) = 0.5 * duzdyl_plus_duydzl
-	      endif		
+	      !endif		
 
           ! precompute terms for attenuation if needed
           !if (ATTENUATION_VAL) then
@@ -615,7 +615,7 @@
     endif
 
     ! save deviatoric strain for Runge-Kutta scheme
-	if (COMPUTE_AND_STORE_STRAIN) then
+	!if (COMPUTE_AND_STORE_STRAIN) then
       do k = 1,NGLLZ
         do j = 1,NGLLY
           do i = 1,NGLLX
@@ -627,7 +627,7 @@
           enddo
         enddo
       enddo
-	endif
+	!endif
 
 
   enddo   ! spectral element loop NSPEC_CRUST_MANTLE

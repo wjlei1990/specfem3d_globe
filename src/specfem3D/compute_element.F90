@@ -142,12 +142,12 @@
                                           duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl)
 
   ! compute deviatoric strain
-  if (COMPUTE_AND_STORE_STRAIN) then
+  !if (COMPUTE_AND_STORE_STRAIN) then
     call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
                                            duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl, &
                                            ispec,NSPEC_STRAIN_ONLY, &
                                            epsilon_trace_over_3,epsilondev_loc)
-  endif
+  !endif
   
   !
   ! compute  isotropic  elements
@@ -504,13 +504,13 @@
                                           duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl)
 
   ! compute deviatoric strain
-  if (COMPUTE_AND_STORE_STRAIN) then
+  !if (COMPUTE_AND_STORE_STRAIN) then
     call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
                                            duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl, &
                                            ispec,NSPEC_STRAIN_ONLY, &
                                            epsilon_trace_over_3,epsilondev_loc)
 
-  endif
+  !endif
   
   !
   ! compute either transversely isotropic elements
@@ -1125,12 +1125,12 @@
                                           duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl)
 
   ! compute deviatoric strain
-  if (COMPUTE_AND_STORE_STRAIN) then
+  !if (COMPUTE_AND_STORE_STRAIN) then
     call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
                                            duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl, &
                                            ispec,NSPEC_STRAIN_ONLY, &
                                            epsilon_trace_over_3,epsilondev_loc)
-  endif
+  !endif
 
   !
   ! compute anisotropic elements
