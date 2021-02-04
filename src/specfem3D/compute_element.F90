@@ -121,10 +121,6 @@
   real(kind=CUSTOM_REAL) :: lambdal,mul,lambdalplus2mul
   real(kind=CUSTOM_REAL) :: kappal
   
-  ! strain tensor components
-  ! real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: epsilon_xx,epsilon_yy,epsilon_zz
-  ! real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: epsilon_xy,epsilon_xz,epsilon_yx,epsilon_yz,epsilon_zx,epsilon_zy
-  
 
 #ifdef FORCE_VECTORIZATION
 ! in this vectorized version we have to assume that N_SLS == 3 in order to be able to unroll and thus suppress
@@ -136,9 +132,6 @@
 #endif
 ! note: profiling shows that this routine takes about 60% of the total time, another 30% is spend in the tiso routine below..
 
-  ! Make sure strain is stored -- how to make this flag always true?
-  ! COMPUTE_AND_STORE_STRAIN=.true.
-
   ! isotropic element
 
   ! precomputes factors
@@ -149,12 +142,10 @@
                                           duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl)
 
   ! compute deviatoric strain
-  !if (COMPUTE_AND_STORE_STRAIN) then
-    call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
+  call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
                                            duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl, &
                                            ispec,NSPEC_STRAIN_ONLY, &
                                            epsilon_trace_over_3,epsilondev_loc)
-  !endif
 
   !
   ! compute  isotropic  elements
@@ -207,19 +198,7 @@
                                                 sigma_xx,sigma_yy,sigma_zz, &
                                                 sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy, &
                                                 tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3)
-												
-  ! Compute components of strain tensor
-  ! DO_LOOP_IJK
-  !   epsilon_xx(INDEX_IJK)=duxdxl(INDEX_IJK)
-  !   epsilon_xy(INDEX_IJK)=0.5_CUSTOM_REAL*duxdyl_plus_duydxl(INDEX_IJK)
-  ! 	epsilon_xz(INDEX_IJK)=0.5_CUSTOM_REAL*duzdxl_plus_duxdzl(INDEX_IJK)
-  ! 	epsilon_yx(INDEX_IJK)=0.5_CUSTOM_REAL*duxdyl_plus_duydxl(INDEX_IJK)
-! 	epsilon_yy(INDEX_IJK)=duydyl(INDEX_IJK)
-! 	epsilon_yz(INDEX_IJK)=0.5_CUSTOM_REAL*duzdyl_plus_duydzl(INDEX_IJK)
-! 	epsilon_zx(INDEX_IJK)=0.5_CUSTOM_REAL*duzdxl_plus_duxdzl(INDEX_IJK)
-! 	epsilon_zy(INDEX_IJK)=0.5_CUSTOM_REAL*duzdyl_plus_duydzl(INDEX_IJK)
- !    epsilon_zz(INDEX_IJK)=duzdzl(INDEX_IJK)
- !  ENDDO_LOOP_IJK
+											
   
   ! compute norm of stress, strain
   DO_LOOP_IJK
@@ -232,15 +211,6 @@
  								  + sigma_zx(INDEX_IJK)**2 &
  								  + sigma_zy(INDEX_IJK)**2 &
  								  + sigma_zz(INDEX_IJK)**2)
-! 	normepsilon_loc(INDEX_IJK)=sqrt(epsilon_xx(INDEX_IJK)**2 & 
-! 								  + epsilon_xy(INDEX_IJK)**2 &
-! 								  + epsilon_xz(INDEX_IJK)**2 & 
-! 								  + epsilon_yx(INDEX_IJK)**2 &
-! 								  + epsilon_yy(INDEX_IJK)**2 &
-! 								  + epsilon_yz(INDEX_IJK)**2 &
-! 								  + epsilon_zx(INDEX_IJK)**2 &
-! 								  + epsilon_zy(INDEX_IJK)**2 &
-! 								  + epsilon_zz(INDEX_IJK)**2)
   ENDDO_LOOP_IJK
 
   end subroutine compute_element_iso
@@ -510,10 +480,7 @@
 
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xx,sigma_yy,sigma_zz
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy
-  
-  ! strain tensor components
-  ! real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: epsilon_xx,epsilon_yy,epsilon_zz
- !  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: epsilon_xy,epsilon_xz,epsilon_yx,epsilon_yz,epsilon_zx,epsilon_zy
+
 
 #ifdef FORCE_VECTORIZATION
 ! in this vectorized version we have to assume that N_SLS == 3 in order to be able to unroll and thus suppress
@@ -525,9 +492,6 @@
 #endif
 ! note: profiling shows that this routine takes about 30% of the total time, another 60% is spend in the iso routine above..
 
-  ! Make sure strain is stored -- how to make this flag always true?
-  !COMPUTE_AND_STORE_STRAIN=.true.
-
   ! transverse isotropic element
 
   ! precomputes factors
@@ -538,12 +502,10 @@
                                           duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl)
 
   ! compute deviatoric strain
-  !if (COMPUTE_AND_STORE_STRAIN) then
-    call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
+  call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
                                            duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl, &
                                            ispec,NSPEC_STRAIN_ONLY, &
                                            epsilon_trace_over_3,epsilondev_loc)
-  !endif
 
   !
   ! compute either transversely isotropic elements
@@ -625,18 +587,6 @@
                                                 sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy, &
                                                 tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3)
 												
-  ! Compute components of strain tensor
- !  DO_LOOP_IJK
- !    epsilon_xx(INDEX_IJK)=duxdxl(INDEX_IJK)
-  !   epsilon_xy(INDEX_IJK)=0.5_CUSTOM_REAL*duxdyl_plus_duydxl(INDEX_IJK)
-	! epsilon_xz(INDEX_IJK)=0.5_CUSTOM_REAL*duzdxl_plus_duxdzl(INDEX_IJK)
-	! epsilon_yx(INDEX_IJK)=0.5_CUSTOM_REAL*duxdyl_plus_duydxl(INDEX_IJK)
-! 	epsilon_yy(INDEX_IJK)=duydyl(INDEX_IJK)
-! 	epsilon_yz(INDEX_IJK)=0.5_CUSTOM_REAL*duzdyl_plus_duydzl(INDEX_IJK)
-	! epsilon_zx(INDEX_IJK)=0.5_CUSTOM_REAL*duzdxl_plus_duxdzl(INDEX_IJK)
-	! epsilon_zy(INDEX_IJK)=0.5_CUSTOM_REAL*duzdyl_plus_duydzl(INDEX_IJK)
-  !   epsilon_zz(INDEX_IJK)=duzdzl(INDEX_IJK)
- !  ENDDO_LOOP_IJK
   
   ! Compute norm of stress, strain
   DO_LOOP_IJK
@@ -649,15 +599,6 @@
  								  + sigma_zx(INDEX_IJK)**2 &
  								  + sigma_zy(INDEX_IJK)**2 &
 	 							  + sigma_zz(INDEX_IJK)**2)
-	! normepsilon_loc(INDEX_IJK)=sqrt(epsilon_xx(INDEX_IJK)**2 & 
-	! 							  + epsilon_xy(INDEX_IJK)**2 &
-	! 							  + epsilon_xz(INDEX_IJK)**2 & 
-	! 							  + epsilon_yx(INDEX_IJK)**2 &
-	! 							  + epsilon_yy(INDEX_IJK)**2 &
-	! 							  + epsilon_yz(INDEX_IJK)**2 &
-	! 							  + epsilon_zx(INDEX_IJK)**2 &
-	! 							  + epsilon_zy(INDEX_IJK)**2 &
-	! 							  + epsilon_zz(INDEX_IJK)**2)
   ENDDO_LOOP_IJK
 
   end subroutine compute_element_tiso
@@ -1158,10 +1099,7 @@
 
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xx,sigma_yy,sigma_zz
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy
-  
-  ! strain tensor components
- !  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: epsilon_xx,epsilon_yy,epsilon_zz
- !  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: epsilon_xy,epsilon_xz,epsilon_yx,epsilon_yz,epsilon_zx,epsilon_zy
+
 
 #ifdef FORCE_VECTORIZATION
 ! in this vectorized version we have to assume that N_SLS == 3 in order to be able to unroll and thus suppress
@@ -1173,9 +1111,6 @@
 #endif
 
   !  anisotropic elements
-  
-  ! Make sure strain is stored -- how to make this flag always true?
-  !COMPUTE_AND_STORE_STRAIN=.true.
 
   ! precomputes factors
   call compute_element_precompute_factors(tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3, &
@@ -1185,12 +1120,10 @@
                                           duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl)
 
   ! compute deviatoric strain
-  !if (COMPUTE_AND_STORE_STRAIN) then
-    call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
+  call compute_element_deviatoric_strain(duxdxl,duydyl,duzdzl, &
                                            duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl, &
                                            ispec,NSPEC_STRAIN_ONLY, &
                                            epsilon_trace_over_3,epsilondev_loc)
-  !endif
 
   !
   ! compute anisotropic elements
@@ -1268,18 +1201,6 @@
                                                 sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy, &
                                                 tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3)
 												
-  ! Compute components of strain tensor
- !  DO_LOOP_IJK
- !    epsilon_xx(INDEX_IJK)=duxdxl(INDEX_IJK)
- !    epsilon_xy(INDEX_IJK)=0.5_CUSTOM_REAL*duxdyl_plus_duydxl(INDEX_IJK)
-! 	epsilon_xz(INDEX_IJK)=0.5_CUSTOM_REAL*duzdxl_plus_duxdzl(INDEX_IJK)
-! 	epsilon_yx(INDEX_IJK)=0.5_CUSTOM_REAL*duxdyl_plus_duydxl(INDEX_IJK)
-! 	epsilon_yy(INDEX_IJK)=duydyl(INDEX_IJK)
-! 	epsilon_yz(INDEX_IJK)=0.5_CUSTOM_REAL*duzdyl_plus_duydzl(INDEX_IJK)
-! 	epsilon_zx(INDEX_IJK)=0.5_CUSTOM_REAL*duzdxl_plus_duxdzl(INDEX_IJK)
-! 	epsilon_zy(INDEX_IJK)=0.5_CUSTOM_REAL*duzdyl_plus_duydzl(INDEX_IJK)
-  !   epsilon_zz(INDEX_IJK)=duzdzl(INDEX_IJK)
- !  ENDDO_LOOP_IJK
   
   ! Compute norm of stress, strain
   DO_LOOP_IJK
@@ -1292,15 +1213,6 @@
  				 + sigma_zx(INDEX_IJK)**2 &
 	 			 + sigma_zy(INDEX_IJK)**2 &
  				 + sigma_zz(INDEX_IJK)**2)
-! 	normepsilon_loc(INDEX_IJK)=sqrt(epsilon_xx(INDEX_IJK)**2 & 
-! 								  + epsilon_xy(INDEX_IJK)**2 &
-! 								  + epsilon_xz(INDEX_IJK)**2 & 
-! 								  + epsilon_yx(INDEX_IJK)**2 &
-	! 							  + epsilon_yy(INDEX_IJK)**2 &
-! 								  + epsilon_yz(INDEX_IJK)**2 &
-! 								  + epsilon_zx(INDEX_IJK)**2 &
-! 								  + epsilon_zy(INDEX_IJK)**2 &
-! 								  + epsilon_zz(INDEX_IJK)**2)
   ENDDO_LOOP_IJK											
 
   end subroutine compute_element_aniso

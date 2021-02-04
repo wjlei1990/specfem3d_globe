@@ -144,17 +144,13 @@
   real(kind=CUSTOM_REAL), dimension(NDIM,NGLLX,NGLLY,NGLLZ) :: rho_s_H
   
   ! strain tensor components
-  ! norm of stress and strain
-  ! real(kind=CUSTOM_REAL) :: epsilon_xx,epsilon_yy,epsilon_zz
-  ! real(kind=CUSTOM_REAL) :: epsilon_xy,epsilon_xz,epsilon_yx,epsilon_yz,epsilon_zx,epsilon_zy
+  ! norm of stress
   real(kind=CUSTOM_REAL) :: normsigma_loc
   
 
 !  integer :: computed_elements
   integer :: num_elements,ispec_p
-  
-  ! Make sure strain is stored -- how to make this flag always true?
-  !COMPUTE_AND_STORE_STRAIN=.true.
+
 
 ! ****************************************************
 !   big loop over all spectral elements in the solid
@@ -253,21 +249,19 @@
           duzdyl_plus_duydzl = duzdyl + duydzl
 
           ! compute deviatoric strain
-          !if (COMPUTE_AND_STORE_STRAIN) then
-            templ = ONE_THIRD * (duxdxl + duydyl + duzdzl)
-            if (NSPEC_CRUST_MANTLE_STRAIN_ONLY == 1) then
-              if (ispec == 1) then
-                epsilon_trace_over_3(i,j,k,1) = templ
-              endif
-            else
-              epsilon_trace_over_3(i,j,k,ispec) = templ
+          templ = ONE_THIRD * (duxdxl + duydyl + duzdzl)
+          if (NSPEC_CRUST_MANTLE_STRAIN_ONLY == 1) then
+            if (ispec == 1) then
+              epsilon_trace_over_3(i,j,k,1) = templ
             endif
-            epsilondev_loc(i,j,k,1) = duxdxl - templ
-            epsilondev_loc(i,j,k,2) = duydyl - templ
-            epsilondev_loc(i,j,k,3) = 0.5 * duxdyl_plus_duydxl
-            epsilondev_loc(i,j,k,4) = 0.5 * duzdxl_plus_duxdzl
-            epsilondev_loc(i,j,k,5) = 0.5 * duzdyl_plus_duydzl
-          !endif
+          else
+            epsilon_trace_over_3(i,j,k,ispec) = templ
+          endif
+          epsilondev_loc(i,j,k,1) = duxdxl - templ
+          epsilondev_loc(i,j,k,2) = duydyl - templ
+          epsilondev_loc(i,j,k,3) = 0.5 * duxdyl_plus_duydxl
+          epsilondev_loc(i,j,k,4) = 0.5 * duzdxl_plus_duxdzl
+          epsilondev_loc(i,j,k,5) = 0.5 * duzdyl_plus_duydzl
 
           ! precompute terms for attenuation if needed
           !if (ATTENUATION_VAL) then
@@ -494,18 +488,8 @@
           tempy3(i,j,k) = jacobianl * (sigma_xy*gammaxl + sigma_yy*gammayl + sigma_zy*gammazl)
           tempz3(i,j,k) = jacobianl * (sigma_xz*gammaxl + sigma_yz*gammayl + sigma_zz*gammazl)
 		  
-	  ! Components of strain tensor
-	  	  ! epsilon_xx=duxdxl
-		  ! epsilon_xy=0.5_CUSTOM_REAL*duxdyl_plus_duydxl
-		  ! epsilon_xz=0.5_CUSTOM_REAL*duzdxl_plus_duxdzl
-		  ! epsilon_yx=0.5_CUSTOM_REAL*duxdyl_plus_duydxl
-		  ! epsilon_yy=duydyl
-		  ! epsilon_yz=0.5_CUSTOM_REAL*duzdyl_plus_duydzl
-		  ! epsilon_zx=0.5_CUSTOM_REAL*duzdxl_plus_duxdzl
-		  ! epsilon_zy=0.5_CUSTOM_REAL*duzdyl_plus_duydzl
-		  ! epsilon_zz=duzdzl
 		  
-	  ! norm of stress, strain 
+	  ! norm of stress 
 	  normsigma_loc=sqrt(sigma_xx**2 & 
    			 + sigma_xy**2 &
 		 	 + sigma_xz**2 & 
@@ -515,21 +499,11 @@
 		 	 + sigma_zx**2 &
 		 	 + sigma_zy**2 &
 		 	 + sigma_zz**2)
-	      ! normepsilon_loc=sqrt(epsilon_xx**2 & 
-			! 				 + epsilon_xy**2 &
-			! 			     + epsilon_xz**2 & 
-			! 				 + epsilon_yx**2 &
-			! 				 + epsilon_yy**2 &
-			! 				 + epsilon_yz**2 &
-			! 				 + epsilon_zx**2 &
-			! 				 + epsilon_zy**2 &
-			! 				 + epsilon_zz**2)
+
 	  if (normsigma_loc >= normsigmamax(i,j,k,ispec)) then
 	    normsigmamax(i,j,k,ispec) = normsigma_loc
 	  endif
-		  ! if (normepsilon_loc >= normepsilonmax(i,j,k,ispec)) then
-		  !   normepsilonmax(i,j,k,ispec) = normepsilon_loc
-	      ! endif
+
 		  
 
         enddo ! NGLLX
@@ -639,20 +613,18 @@
     endif
 
     ! save deviatoric strain for Runge-Kutta scheme
-    !if (COMPUTE_AND_STORE_STRAIN) then
-      !epsilondev(:,:,:,:,ispec) = epsilondev_loc(:,:,:,:)
-      do k = 1,NGLLZ
-        do j = 1,NGLLY
-          do i = 1,NGLLX
-            epsilondev_xx(i,j,k,ispec) = epsilondev_loc(i,j,k,1)
-            epsilondev_yy(i,j,k,ispec) = epsilondev_loc(i,j,k,2)
-            epsilondev_xy(i,j,k,ispec) = epsilondev_loc(i,j,k,3)
-            epsilondev_xz(i,j,k,ispec) = epsilondev_loc(i,j,k,4)
-            epsilondev_yz(i,j,k,ispec) = epsilondev_loc(i,j,k,5)
-          enddo
+    do k = 1,NGLLZ
+      do j = 1,NGLLY
+        do i = 1,NGLLX
+          epsilondev_xx(i,j,k,ispec) = epsilondev_loc(i,j,k,1)
+          epsilondev_yy(i,j,k,ispec) = epsilondev_loc(i,j,k,2)
+          epsilondev_xy(i,j,k,ispec) = epsilondev_loc(i,j,k,3)
+          epsilondev_xz(i,j,k,ispec) = epsilondev_loc(i,j,k,4)
+          epsilondev_yz(i,j,k,ispec) = epsilondev_loc(i,j,k,5)
         enddo
       enddo
-    !endif
+    enddo
+
 
   enddo   ! spectral element loop NSPEC_CRUST_MANTLE
 

@@ -46,12 +46,10 @@
   !              iphase = 2 is for computing inner elements (former icall parameter)
   integer :: iphase
   
-  ! Norm of stress (sigma) and strain (epsilon) throughout the crust and mantle
+  ! Norm of stress (sigma) throughout the crust and mantle
   real(kind=CUSTOM_REAL),dimension(NGLLX,NGLLY,NGLLZ,NSPEC_CRUST_MANTLE_STR_OR_ATT),intent(inout) :: normsigma_max_cm
   ! 
 
-  ! Make sure strain is stored -- how to make this flag always true?
-  !COMPUTE_AND_STORE_STRAIN=.true.
 
   ! ****************************************************
   !   big loop over all spectral elements in the solid
@@ -781,9 +779,6 @@
 
   ! inner/outer element run flag
   integer,intent(in) :: iphase
-  
-  ! Make sure strain is stored -- how to make this flag always true?
-  !COMPUTE_AND_STORE_STRAIN=.true.
   
 
   if (USE_DEVILLE_PRODUCTS_VAL) then

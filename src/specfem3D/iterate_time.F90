@@ -43,6 +43,7 @@
   
   ! Track maximum norm of displacement, velocity in crust/mantle, 
   ! outer core, and inner core
+  ! Only works in the CPU version of the code
   real(kind=CUSTOM_REAL), dimension(NGLOB_CRUST_MANTLE) :: ndispl_max_cm,nveloc_max_cm
   real(kind=CUSTOM_REAL), dimension(NGLOB_INNER_CORE) :: ndispl_max_ic,nveloc_max_ic
   real(kind=CUSTOM_REAL), dimension(NGLOB_OUTER_CORE) :: ndispl_max_oc,nveloc_max_oc
@@ -51,6 +52,7 @@
   ! not the actual displacement and velocity of the outer core
   
   ! Track the maximum norm of stress, strain in crust/mantle
+  ! Only works in the CPU version of the code
   real(kind=CUSTOM_REAL) :: epsilon_xx,epsilon_yy,epsilon_zz,epsilon_xy,epsilon_xz,epsilon_yz 
   real(kind=CUSTOM_REAL) :: nepsilon_cm
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,NSPEC_CRUST_MANTLE_STR_OR_ATT) :: nepsilon_max_cm,nsigma_max_cm
@@ -283,17 +285,6 @@
       call it_update_vtkwindow()
     endif
 	
-	! compute the maximum norm of displacement and velocity
-	! crust/mantle
-	! What do the transfer_* functions do?
-	!if (GPU_MODE) then
-    !  call transfer_veloc_cm_from_device(NDIM*NGLOB_CRUST_MANTLE,veloc_crust_mantle,Mesh_pointer)
-    !  call transfer_veloc_ic_from_device(NDIM*NGLOB_INNER_CORE,veloc_inner_core,Mesh_pointer)
-    !  call transfer_veloc_oc_from_device(NGLOB_OUTER_CORE,veloc_outer_core,Mesh_pointer)
-    !  call transfer_displ_cm_from_device(NDIM*NGLOB_CRUST_MANTLE,displ_crust_mantle,Mesh_pointer)
-    !  call transfer_displ_ic_from_device(NDIM*NGLOB_INNER_CORE,displ_inner_core,Mesh_pointer)
-    !  call transfer_displ_oc_from_device(NGLOB_OUTER_CORE,displ_outer_core,Mesh_pointer)
-	!endif
 	
     do iglob = 1, NGLOB_CRUST_MANTLE
       ndispl_cm=scale_displ*sqrt(displ_crust_mantle(1,iglob)**2 &
@@ -338,35 +329,21 @@
       endif
     enddo
 	
-	! Compute the maximum norm of strain in the crust/mantle
-	!if (GPU_MODE) then
-	!  call transfer_strain_cm_from_device(Mesh_pointer, &
-    !                                          eps_trace_over_3_crust_mantle, &
-    !                                          epsilondev_xx_crust_mantle,epsilondev_yy_crust_mantle, &
-    !                                          epsilondev_xy_crust_mantle,epsilondev_xz_crust_mantle, &
-    !                                          epsilondev_yz_crust_mantle)
-	!endif
-	
-	
 	
     ! compute maximum norm of stress and strain in the crust/mantle
-    !if (COMPUTE_AND_STORE_STRAIN) then
-      do ispec=1,NSPEC_CRUST_MANTLE_STR_OR_ATT
-        do k=1, NGLLZ
-          do j=1, NGLLY
-            do i=1, NGLLX
-		      !if (nsigma_cm(i,j,k,ispec) >= nsigma_max_cm(i,j,k,ispec)) then
-			  !  nsigma_max_cm(i,j,k,ispec)=nsigma_cm(i,j,k,ispec)
-		  !endif 
-              epsilon_xx=eps_trace_over_3_crust_mantle(i,j,k,ispec) + epsilondev_xx_crust_mantle(i,j,k,ispec)
-              epsilon_yy=eps_trace_over_3_crust_mantle(i,j,k,ispec) + epsilondev_yy_crust_mantle(i,j,k,ispec)
-              epsilon_zz=eps_trace_over_3_crust_mantle(i,j,k,ispec) &
+    do ispec=1,NSPEC_CRUST_MANTLE_STR_OR_ATT
+      do k=1, NGLLZ
+        do j=1, NGLLY
+          do i=1, NGLLX
+            epsilon_xx=eps_trace_over_3_crust_mantle(i,j,k,ispec) + epsilondev_xx_crust_mantle(i,j,k,ispec)
+            epsilon_yy=eps_trace_over_3_crust_mantle(i,j,k,ispec) + epsilondev_yy_crust_mantle(i,j,k,ispec)
+            epsilon_zz=eps_trace_over_3_crust_mantle(i,j,k,ispec) &
                            - epsilondev_xx_crust_mantle(i,j,k,ispec) &
                            - epsilondev_yy_crust_mantle(i,j,k,ispec)
-              epsilon_xy = epsilondev_xy_crust_mantle(i,j,k,ispec)
-              epsilon_xz = epsilondev_xz_crust_mantle(i,j,k,ispec)
-              epsilon_yz = epsilondev_yz_crust_mantle(i,j,k,ispec)
-              nepsilon_cm=sqrt(epsilon_xx**2 & 
+            epsilon_xy = epsilondev_xy_crust_mantle(i,j,k,ispec)
+            epsilon_xz = epsilondev_xz_crust_mantle(i,j,k,ispec)
+            epsilon_yz = epsilondev_yz_crust_mantle(i,j,k,ispec)
+            nepsilon_cm=sqrt(epsilon_xx**2 & 
 				+ epsilon_yy**2 &
 				+ epsilon_zz**2 &
 				+ epsilon_xy**2 &
@@ -375,14 +352,13 @@
 				+ epsilon_xy**2 &
 				+ epsilon_xz**2 &
 				+ epsilon_yz**2)
-              if (nepsilon_cm >= nepsilon_max_cm(i,j,k,ispec)) then
-                nepsilon_max_cm(i,j,k,ispec)=nepsilon_cm
-	      endif
-            enddo			
-          enddo
+            if (nepsilon_cm >= nepsilon_max_cm(i,j,k,ispec)) then
+              nepsilon_max_cm(i,j,k,ispec)=nepsilon_cm
+	    endif
+          enddo			
         enddo
       enddo
-    !endif
+    enddo
 
 	
 

@@ -155,8 +155,6 @@
   integer :: ijk_spec,ip,iglob_p,ijk
 #endif
 
-  ! Make sure strain is stored -- how to make this flag always true?
-  !COMPUTE_AND_STORE_STRAIN=.true.
 
   !integer,parameter :: NGLL2 = NGLLY * NGLLZ
   !integer,parameter :: NGLL3 = NGLLX * NGLLY * NGLLZ
@@ -422,13 +420,12 @@
     endif
 
     ! save deviatoric strain for Runge-Kutta scheme
-    !if (COMPUTE_AND_STORE_STRAIN) then
-      epsilondev_xx(:,:,:,ispec) = epsilondev_loc(:,:,:,1)
-      epsilondev_yy(:,:,:,ispec) = epsilondev_loc(:,:,:,2)
-      epsilondev_xy(:,:,:,ispec) = epsilondev_loc(:,:,:,3)
-      epsilondev_xz(:,:,:,ispec) = epsilondev_loc(:,:,:,4)
-      epsilondev_yz(:,:,:,ispec) = epsilondev_loc(:,:,:,5)
-    !endif
+    epsilondev_xx(:,:,:,ispec) = epsilondev_loc(:,:,:,1)
+    epsilondev_yy(:,:,:,ispec) = epsilondev_loc(:,:,:,2)
+    epsilondev_xy(:,:,:,ispec) = epsilondev_loc(:,:,:,3)
+    epsilondev_xz(:,:,:,ispec) = epsilondev_loc(:,:,:,4)
+    epsilondev_yz(:,:,:,ispec) = epsilondev_loc(:,:,:,5)
+
 	
 	! Add to norm of stress and strain
     do k = 1,NGLLZ
@@ -437,9 +434,6 @@
           if (normsigma_loc(i,j,k) >= normsigmamax(i,j,k,ispec)) then
             normsigmamax(i,j,k,ispec) = normsigma_loc(i,j,k)
 	  endif
-	!	  if (normepsilon_loc(i,j,k) >= normepsilonmax(i,j,k,ispec)) then
-	! 	    normepsilonmax(i,j,k,ispec) = normepsilon_loc(i,j,k)
-	!       endif
 	enddo
       enddo
     enddo
