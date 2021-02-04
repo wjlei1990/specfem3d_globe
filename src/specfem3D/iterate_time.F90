@@ -722,11 +722,6 @@
   real(kind=CUSTOM_REAL), dimension(NGLOB_OUTER_CORE), intent(in) :: maxnormdisp_oc,maxnormvel_oc 
   real(kind=CUSTOM_REAL), dimension(NGLOB_INNER_CORE), intent(in) :: maxnormdisp_ic,maxnormvel_ic
   
-  ! The flags: use dummy flags for the crust and outer core
-  ! The flags are mainly useful for distinguishing what is vs. isn't the center cube
-  integer, dimension(NSPEC_CRUST_MANTLE) :: dummy_idoubling_cm
-  integer, dimension(NSPEC_OUTER_CORE) :: dummy_idoubling_oc  
-  
   ! bin file names
   character(len=MAX_STRING_LEN) :: dispfile_cm,dispfile_ic,dispfile_oc,velfile_cm,velfile_ic,velfile_oc
   
