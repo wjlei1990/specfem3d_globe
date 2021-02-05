@@ -61,7 +61,8 @@
     ATTENUATION_VAL, &
     PARTIAL_PHYS_DISPERSION_ONLY_VAL,GRAVITY_VAL
 
-  use specfem_par, only: COMPUTE_AND_STORE_STRAIN
+  use specfem_par, only: COMPUTE_AND_STORE_STRAIN, &
+	PI,GRAV,RHOAV,R_PLANET
 
 #ifdef FORCE_VECTORIZATION
   use constants, only: NGLLCUBE
@@ -121,6 +122,9 @@
   real(kind=CUSTOM_REAL) :: lambdal,mul,lambdalplus2mul
   real(kind=CUSTOM_REAL) :: kappal
   
+  ! Scaling factor to bars
+  real(kind=CUSTOM_REAL) :: scaleval,scale_bar
+  
 
 #ifdef FORCE_VECTORIZATION
 ! in this vectorized version we have to assume that N_SLS == 3 in order to be able to unroll and thus suppress
@@ -131,6 +135,7 @@
   integer :: i,j,k
 #endif
 ! note: profiling shows that this routine takes about 60% of the total time, another 30% is spend in the tiso routine below..
+
 
   ! isotropic element
 
@@ -203,8 +208,12 @@
 											
   
   ! compute norm of stress, strain
+  ! Define scaling factor for stress
+  scaleval = dsqrt(PI*GRAV*RHOAV)
+  scale_bar = (RHOAV/1000.d0)*((R_PLANET*scaleval/1000.d0)**2)*10000.d0
+  
   DO_LOOP_IJK
-    normsigma_loc(INDEX_IJK)=sqrt(sigma_xx(INDEX_IJK)**2 & 
+    normsigma_loc(INDEX_IJK)=scale_bar*sqrt(sigma_xx(INDEX_IJK)**2 & 
  								  + sigma_xy(INDEX_IJK)**2 &
  								  + sigma_xz(INDEX_IJK)**2 & 
  								  + sigma_yx(INDEX_IJK)**2 &
@@ -419,7 +428,8 @@
     ATTENUATION_VAL, &
     PARTIAL_PHYS_DISPERSION_ONLY_VAL,GRAVITY_VAL
 
-  use specfem_par, only: COMPUTE_AND_STORE_STRAIN
+  use specfem_par, only: COMPUTE_AND_STORE_STRAIN, &
+	PI,GRAV,RHOAV,R_PLANET
 
 #ifdef FORCE_VECTORIZATION
   use constants, only: NGLLCUBE
@@ -482,6 +492,9 @@
 
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xx,sigma_yy,sigma_zz
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy
+  
+  ! Scaling factor to bars
+  real(kind=CUSTOM_REAL) :: scaleval,scale_bar
 
 
 #ifdef FORCE_VECTORIZATION
@@ -594,8 +607,13 @@
 												
   
   ! Compute norm of stress, strain
+  ! compute norm of stress, strain
+  ! Define scaling factor for stress
+  scaleval = dsqrt(PI*GRAV*RHOAV)
+  scale_bar = (RHOAV/1000.d0)*((R_PLANET*scaleval/1000.d0)**2)*10000.d0
+  
   DO_LOOP_IJK
-    normsigma_loc(INDEX_IJK)=sqrt(sigma_xx(INDEX_IJK)**2 & 
+    normsigma_loc(INDEX_IJK)=scale_bar*sqrt(sigma_xx(INDEX_IJK)**2 & 
  								  + sigma_xy(INDEX_IJK)**2 &
  								  + sigma_xz(INDEX_IJK)**2 & 
  								  + sigma_yx(INDEX_IJK)**2 &
@@ -1041,7 +1059,8 @@
     ATTENUATION_VAL, &
     PARTIAL_PHYS_DISPERSION_ONLY_VAL,GRAVITY_VAL
 
-  use specfem_par, only: COMPUTE_AND_STORE_STRAIN
+  use specfem_par, only: COMPUTE_AND_STORE_STRAIN, &
+	PI,GRAV,RHOAV,R_PLANET
 
 #ifdef FORCE_VECTORIZATION
   use constants, only: NGLLCUBE
@@ -1104,6 +1123,9 @@
 
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xx,sigma_yy,sigma_zz
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy
+  
+  ! Scaling factor to bars
+  real(kind=CUSTOM_REAL) :: scaleval,scale_bar
 
 
 #ifdef FORCE_VECTORIZATION
@@ -1210,8 +1232,13 @@
 												
   
   ! Compute norm of stress, strain
+  ! compute norm of stress, strain
+  ! Define scaling factor for stress
+  scaleval = dsqrt(PI*GRAV*RHOAV)
+  scale_bar = (RHOAV/1000.d0)*((R_PLANET*scaleval/1000.d0)**2)*10000.d0
+  
   DO_LOOP_IJK
-    normsigma_loc(INDEX_IJK)=sqrt(sigma_xx(INDEX_IJK)**2 & 
+    normsigma_loc(INDEX_IJK)=scale_bar*sqrt(sigma_xx(INDEX_IJK)**2 & 
  				 + sigma_xy(INDEX_IJK)**2 &
  				 + sigma_xz(INDEX_IJK)**2 & 
  				 + sigma_yx(INDEX_IJK)**2 &

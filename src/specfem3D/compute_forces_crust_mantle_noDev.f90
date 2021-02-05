@@ -44,7 +44,8 @@
     hprime_xx,hprime_yy,hprime_zz,hprimewgll_xx,hprimewgll_yy,hprimewgll_zz, &
     wgllwgll_xy,wgllwgll_xz,wgllwgll_yz,wgll_cube, &
     gravity_pre_store => gravity_pre_store_crust_mantle,gravity_H => gravity_H_crust_mantle, &
-    COMPUTE_AND_STORE_STRAIN,USE_LDDRK
+    COMPUTE_AND_STORE_STRAIN,USE_LDDRK, &
+	PI,GRAV,RHOAV,R_PLANET
 
   use specfem_par_crustmantle, only: &
     xix => xix_crust_mantle,xiy => xiy_crust_mantle,xiz => xiz_crust_mantle, &
@@ -146,10 +147,17 @@
   ! strain tensor components
   ! norm of stress
   real(kind=CUSTOM_REAL) :: normsigma_loc
+  ! Scaling factor to bars
+  real(kind=CUSTOM_REAL) :: scaleval,scale_bar
   
 
 !  integer :: computed_elements
   integer :: num_elements,ispec_p
+
+
+  ! Define scaling factor for stress
+  scaleval = dsqrt(PI*GRAV*RHOAV)
+  scale_bar = (RHOAV/1000.d0)*((R_PLANET*scaleval/1000.d0)**2)*10000.d0
 
 
 ! ****************************************************
@@ -492,7 +500,7 @@
 		  
 		  
 	  ! norm of stress 
-	  normsigma_loc=sqrt(sigma_xx**2 & 
+	  normsigma_loc=scale_bar*sqrt(sigma_xx**2 & 
    			 + sigma_xy**2 &
 		 	 + sigma_xz**2 & 
 		 	 + sigma_yx**2 &
