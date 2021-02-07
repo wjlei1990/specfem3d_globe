@@ -284,81 +284,86 @@
       call it_update_vtkwindow()
     endif
 	
-	
-    do iglob = 1, NGLOB_CRUST_MANTLE
-      ndispl_cm=scale_displ*sqrt(displ_crust_mantle(1,iglob)**2 &
+    if (.not. GPU_MODE) then
+      ! crust and mantle
+      do iglob = 1, NGLOB_CRUST_MANTLE
+        ndispl_cm=scale_displ*sqrt(displ_crust_mantle(1,iglob)**2 &
 		+ displ_crust_mantle(2,iglob)**2 &
 		+ displ_crust_mantle(3,iglob)**2)
-      if (ndispl_cm >= ndispl_max_cm(iglob)) then
-        ndispl_max_cm(iglob)=ndispl_cm
-      endif
-      nveloc_cm=scale_veloc*sqrt(veloc_crust_mantle(1,iglob)**2 &
+        if (ndispl_cm >= ndispl_max_cm(iglob)) then
+          ndispl_max_cm(iglob)=ndispl_cm
+        endif
+        nveloc_cm=scale_veloc*sqrt(veloc_crust_mantle(1,iglob)**2 &
 		+ veloc_crust_mantle(2,iglob)**2 &
 		+ veloc_crust_mantle(3,iglob)**2)
-      if (nveloc_cm >= nveloc_max_cm(iglob)) then
-        nveloc_max_cm(iglob)=nveloc_cm
-      endif
-    enddo
+        if (nveloc_cm >= nveloc_max_cm(iglob)) then
+          nveloc_max_cm(iglob)=nveloc_cm
+        endif
+      enddo
 	  
-    ! inner core
-    do iglob = 1, NGLOB_INNER_CORE
-      ndispl_ic=scale_displ*sqrt(displ_inner_core(1,iglob)**2 &
+      ! inner core
+      do iglob = 1, NGLOB_INNER_CORE
+        ndispl_ic=scale_displ*sqrt(displ_inner_core(1,iglob)**2 &
 		+ displ_inner_core(2,iglob)**2 &
 		+ displ_inner_core(3,iglob)**2)
-      if (ndispl_ic >= ndispl_max_ic(iglob)) then
-        ndispl_max_ic(iglob)=ndispl_ic
-      endif
-      nveloc_ic=scale_veloc*sqrt(veloc_inner_core(1,iglob)**2 &
+        if (ndispl_ic >= ndispl_max_ic(iglob)) then
+          ndispl_max_ic(iglob)=ndispl_ic
+        endif
+        nveloc_ic=scale_veloc*sqrt(veloc_inner_core(1,iglob)**2 &
 		+ veloc_inner_core(2,iglob)**2 &
 		+ veloc_inner_core(3,iglob)**2)
-      if (nveloc_ic >= nveloc_max_ic(iglob)) then
-        nveloc_max_ic(iglob)=nveloc_ic
-      endif
-    enddo
+        if (nveloc_ic >= nveloc_max_ic(iglob)) then
+          nveloc_max_ic(iglob)=nveloc_ic
+        endif
+      enddo
 	  
-    ! outer core
-    do iglob = 1, NGLOB_OUTER_CORE
-      ndispl_oc=abs(displ_outer_core(iglob))
-      if (ndispl_oc >= ndispl_max_oc(iglob)) then
-        ndispl_max_oc(iglob)=ndispl_oc
-      endif
-      nveloc_oc=abs(veloc_outer_core(iglob))
-      if (nveloc_oc >= nveloc_max_oc(iglob)) then
-        nveloc_max_oc(iglob)=nveloc_oc
-      endif
-    enddo
+      ! outer core
+      do iglob = 1, NGLOB_OUTER_CORE
+        ndispl_oc=abs(displ_outer_core(iglob))
+        if (ndispl_oc >= ndispl_max_oc(iglob)) then
+          ndispl_max_oc(iglob)=ndispl_oc
+        endif
+        nveloc_oc=abs(veloc_outer_core(iglob))
+        if (nveloc_oc >= nveloc_max_oc(iglob)) then
+          nveloc_max_oc(iglob)=nveloc_oc
+        endif
+      enddo
 	
-	
-    ! compute maximum norm of stress and strain in the crust/mantle
-    do ispec=1,NSPEC_CRUST_MANTLE_STR_OR_ATT
-      do k=1, NGLLZ
-        do j=1, NGLLY
-          do i=1, NGLLX
-            epsilon_xx=eps_trace_over_3_crust_mantle(i,j,k,ispec) + epsilondev_xx_crust_mantle(i,j,k,ispec)
-            epsilon_yy=eps_trace_over_3_crust_mantle(i,j,k,ispec) + epsilondev_yy_crust_mantle(i,j,k,ispec)
-            epsilon_zz=eps_trace_over_3_crust_mantle(i,j,k,ispec) &
+      ! compute maximum norm of strain in the crust/mantle
+      if (COMPUTE_AND_STORE_STRAIN) then
+        do ispec=1,NSPEC_CRUST_MANTLE_STR_OR_ATT
+          do k=1, NGLLZ
+            do j=1, NGLLY
+              do i=1, NGLLX
+                epsilon_xx=eps_trace_over_3_crust_mantle(i,j,k,ispec) & 
+							+ epsilondev_xx_crust_mantle(i,j,k,ispec)
+                epsilon_yy=eps_trace_over_3_crust_mantle(i,j,k,ispec) & 
+							+ epsilondev_yy_crust_mantle(i,j,k,ispec)
+                epsilon_zz=eps_trace_over_3_crust_mantle(i,j,k,ispec) &
                            - epsilondev_xx_crust_mantle(i,j,k,ispec) &
                            - epsilondev_yy_crust_mantle(i,j,k,ispec)
-            epsilon_xy = epsilondev_xy_crust_mantle(i,j,k,ispec)
-            epsilon_xz = epsilondev_xz_crust_mantle(i,j,k,ispec)
-            epsilon_yz = epsilondev_yz_crust_mantle(i,j,k,ispec)
-            nepsilon_cm=sqrt(epsilon_xx**2 & 
-				+ epsilon_yy**2 &
-				+ epsilon_zz**2 &
-				+ epsilon_xy**2 &
-				+ epsilon_xz**2 &
-				+ epsilon_yz**2 & 
-				+ epsilon_xy**2 &
-				+ epsilon_xz**2 &
-				+ epsilon_yz**2)
-            if (nepsilon_cm >= nepsilon_max_cm(i,j,k,ispec)) then
-              nepsilon_max_cm(i,j,k,ispec)=nepsilon_cm
-	    endif
-          enddo			
+                epsilon_xy = epsilondev_xy_crust_mantle(i,j,k,ispec)
+                epsilon_xz = epsilondev_xz_crust_mantle(i,j,k,ispec)
+                epsilon_yz = epsilondev_yz_crust_mantle(i,j,k,ispec)
+                nepsilon_cm=sqrt(epsilon_xx**2 & 
+			  	  + epsilon_yy**2 &
+				  + epsilon_zz**2 &
+				  + epsilon_xy**2 &
+				  + epsilon_xz**2 &
+				  + epsilon_yz**2 & 
+				  + epsilon_xy**2 &
+				  + epsilon_xz**2 &
+				  + epsilon_yz**2)
+                if (nepsilon_cm >= nepsilon_max_cm(i,j,k,ispec)) then
+                  nepsilon_max_cm(i,j,k,ispec)=nepsilon_cm
+	        endif
+              enddo			
+            enddo
+          enddo
         enddo
-      enddo
-    enddo
-
+      endif
+	  
+    endif
 	
 
   !
@@ -387,14 +392,19 @@
   if (OUTPUT_ENERGY .and. myrank == 0) close(IOUT_ENERGY)
   
   
-  ! Write the peak values for norm stress, strain, displacement, velocity to VTK files
+  ! Write the peak values for norm stress, strain, displacement, velocity to bin files
   ! Only for CPU version
-  if (SIMULATION_TYPE == 1) then
-    call write_bin_ndispvel(ndispl_max_cm,nveloc_max_cm,ndispl_max_ic,nveloc_max_ic, &
+  if (.not. GPU_MODE) then
+    if (SIMULATION_TYPE == 1) then
+      call write_bin_ndispvel(ndispl_max_cm,nveloc_max_cm,ndispl_max_ic,nveloc_max_ic, &
 			   ndispl_max_oc,nveloc_max_oc)
-
-	call write_bin_stressstrain_cm(nsigma_max_cm,nepsilon_max_cm)
+      call write_bin_stress_cm(nsigma_max_cm)
+	  
+      if (COMPUTE_AND_STORE_STRAIN) then
+        call write_bin_strain_cm(nepsilon_max_cm)
+      endif
 	
+    endif
   endif
 
   end subroutine iterate_time
@@ -867,7 +877,7 @@
 !-------------------------------------------------------------------------------------------------
 !
 
-  subroutine write_bin_stressstrain_cm(maxnormsigma_cm,maxnormepsilon_cm)
+  subroutine write_bin_stress_cm(maxnormsigma_cm)
   
   use constants_solver
   use specfem_par
@@ -876,12 +886,11 @@
   implicit none
   
   ! GLL data values array, of peak norms of stress and strain
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,NSPEC_CRUST_MANTLE_STR_OR_ATT),intent(in) :: maxnormsigma_cm, &
-  maxnormepsilon_cm
+  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,NSPEC_CRUST_MANTLE_STR_OR_ATT),intent(in) :: maxnormsigma_cm
   
   ! variables
   integer :: ier
-  character(len=MAX_STRING_LEN) :: outputsigma,outputepsilon
+  character(len=MAX_STRING_LEN) :: outputsigma
   
   ! Use xcombine_vol_data? with region 1
   write(outputsigma, '(a,i6.6,a)') 'DATABASES_MPI/proc',myrank,'_reg1_maxnormstress.bin'
@@ -889,7 +898,30 @@
   if (ier /= 0 ) call exit_MPI(myrank,'Error opening file '//trim(outputsigma))
   write(IOUT) maxnormsigma_cm
   close(IOUT)
+
   
+  end subroutine write_bin_stress_cm
+  
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  subroutine write_bin_strain_cm(maxnormepsilon_cm)
+  
+  use constants_solver
+  use specfem_par
+  use specfem_par_crustmantle
+  
+  implicit none
+  
+  ! GLL data values array of peak norms of strain
+  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,NSPEC_CRUST_MANTLE_STR_OR_ATT),intent(in) :: maxnormepsilon_cm
+  
+  ! variables
+  integer :: ier
+  character(len=MAX_STRING_LEN) :: outputepsilon
+  
+  ! Use xcombine_vol_data with region 1
   write(outputepsilon, '(a,i6.6,a)') 'DATABASES_MPI/proc',myrank,'_reg1_maxnormstrain.bin'
   open(unit=IOUT,file=trim(outputepsilon),status='unknown',form='unformatted',iostat=ier)
   if (ier /= 0 ) call exit_MPI(myrank,'Error opening file '//trim(outputepsilon))
@@ -897,5 +929,5 @@
   close(IOUT)
 
   
-  end subroutine write_bin_stressstrain_cm
-
+  end subroutine write_bin_strain_cm
+  
