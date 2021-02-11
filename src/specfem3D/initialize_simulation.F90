@@ -221,7 +221,6 @@
   else
     COMPUTE_AND_STORE_STRAIN = .false.
   endif
-  
 
   ! checks flags
   call initialize_simulation_check()

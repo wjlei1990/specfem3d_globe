@@ -36,7 +36,7 @@
                                                epsilondev_xz,epsilondev_yz, &
                                                epsilon_trace_over_3, &
                                                alphaval,betaval,gammaval, &
-                                               factor_common,vnspec,normsigmamax)
+                                               factor_common,vnspec)
 
   use constants_solver
 
@@ -44,8 +44,7 @@
     hprime_xx,hprime_yy,hprime_zz,hprimewgll_xx,hprimewgll_yy,hprimewgll_zz, &
     wgllwgll_xy,wgllwgll_xz,wgllwgll_yz,wgll_cube, &
     gravity_pre_store => gravity_pre_store_crust_mantle,gravity_H => gravity_H_crust_mantle, &
-    COMPUTE_AND_STORE_STRAIN,USE_LDDRK, &
-	PI,GRAV,RHOAV,R_PLANET
+    COMPUTE_AND_STORE_STRAIN,USE_LDDRK
 
   use specfem_par_crustmantle, only: &
     xix => xix_crust_mantle,xiy => xiy_crust_mantle,xiz => xiz_crust_mantle, &
@@ -98,10 +97,6 @@
 
   ! inner/outer element run flag
   integer,intent(in) :: iphase
-  
-  ! Norm of stress (sigma) and strain (epsilon)
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,NSPEC_STR_OR_ATT),intent(inout) :: normsigmamax
-  
 
   ! local parameters
 
@@ -143,22 +138,9 @@
   real(kind=CUSTOM_REAL) factor,sx_l,sy_l,sz_l,gxl,gyl,gzl
   real(kind=CUSTOM_REAL) Hxxl,Hyyl,Hzzl,Hxyl,Hxzl,Hyzl
   real(kind=CUSTOM_REAL), dimension(NDIM,NGLLX,NGLLY,NGLLZ) :: rho_s_H
-  
-  ! strain tensor components
-  ! norm of stress
-  real(kind=CUSTOM_REAL) :: normsigma_loc
-  ! Scaling factor to bars
-  real(kind=CUSTOM_REAL) :: scaleval,scale_bar
-  
 
 !  integer :: computed_elements
   integer :: num_elements,ispec_p
-
-
-  ! Define scaling factor for stress
-  scaleval = dsqrt(PI*GRAV*RHOAV)
-  scale_bar = (RHOAV/1000.d0)*((R_PLANET*scaleval/1000.d0)**2)*10000.d0
-
 
 ! ****************************************************
 !   big loop over all spectral elements in the solid
@@ -257,7 +239,7 @@
           duzdyl_plus_duydzl = duzdyl + duydzl
 
           ! compute deviatoric strain
-		  if (COMPUTE_AND_STORE_STRAIN) then
+          if (COMPUTE_AND_STORE_STRAIN) then
             templ = ONE_THIRD * (duxdxl + duydyl + duzdzl)
             if (NSPEC_CRUST_MANTLE_STRAIN_ONLY == 1) then
               if (ispec == 1) then
@@ -271,7 +253,7 @@
             epsilondev_loc(i,j,k,3) = 0.5 * duxdyl_plus_duydxl
             epsilondev_loc(i,j,k,4) = 0.5 * duzdxl_plus_duxdzl
             epsilondev_loc(i,j,k,5) = 0.5 * duzdyl_plus_duydzl
-	      endif		
+          endif
 
           ! precompute terms for attenuation if needed
           !if (ATTENUATION_VAL) then
@@ -497,24 +479,6 @@
           tempx3(i,j,k) = jacobianl * (sigma_xx*gammaxl + sigma_yx*gammayl + sigma_zx*gammazl)
           tempy3(i,j,k) = jacobianl * (sigma_xy*gammaxl + sigma_yy*gammayl + sigma_zy*gammazl)
           tempz3(i,j,k) = jacobianl * (sigma_xz*gammaxl + sigma_yz*gammayl + sigma_zz*gammazl)
-		  
-		  
-	  ! norm of stress 
-	  normsigma_loc=scale_bar*sqrt(sigma_xx**2 & 
-   			 + sigma_xy**2 &
-		 	 + sigma_xz**2 & 
-		 	 + sigma_yx**2 &
-			 + sigma_yy**2 &
-		 	 + sigma_yz**2 &
-		 	 + sigma_zx**2 &
-		 	 + sigma_zy**2 &
-		 	 + sigma_zz**2)
-
-	  if (normsigma_loc >= normsigmamax(i,j,k,ispec)) then
-	    normsigmamax(i,j,k,ispec) = normsigma_loc
-	  endif
-
-		  
 
         enddo ! NGLLX
       enddo ! NGLLY
@@ -623,7 +587,8 @@
     endif
 
     ! save deviatoric strain for Runge-Kutta scheme
-	if (COMPUTE_AND_STORE_STRAIN) then
+    if (COMPUTE_AND_STORE_STRAIN) then
+      !epsilondev(:,:,:,:,ispec) = epsilondev_loc(:,:,:,:)
       do k = 1,NGLLZ
         do j = 1,NGLLY
           do i = 1,NGLLX
@@ -635,8 +600,7 @@
           enddo
         enddo
       enddo
-	endif
-
+    endif
 
   enddo   ! spectral element loop NSPEC_CRUST_MANTLE
 

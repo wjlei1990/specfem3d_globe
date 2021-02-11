@@ -47,7 +47,7 @@
                                  epsilon_trace_over_3, &
                                  tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3, &
                                  dummyx_loc,dummyy_loc,dummyz_loc, &
-                                 epsilondev_loc,rho_s_H,normsigma_loc)
+                                 epsilondev_loc,rho_s_H)
 
 ! isotropic element in crust/mantle region
 
@@ -61,8 +61,7 @@
     ATTENUATION_VAL, &
     PARTIAL_PHYS_DISPERSION_ONLY_VAL,GRAVITY_VAL
 
-  use specfem_par, only: COMPUTE_AND_STORE_STRAIN, &
-	PI,GRAV,RHOAV,R_PLANET
+  use specfem_par, only: COMPUTE_AND_STORE_STRAIN
 
 #ifdef FORCE_VECTORIZATION
   use constants, only: NGLLCUBE
@@ -105,9 +104,6 @@
 
   real(kind=CUSTOM_REAL), dimension(NDIM,NGLLX,NGLLY,NGLLZ),intent(inout) :: rho_s_H
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,5),intent(inout) :: epsilondev_loc
-  
-  ! Compute norm of stress (sigma) and strain (epsilon) per element
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ),intent(inout) :: normsigma_loc
 
   ! local parameters
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: jacobianl
@@ -121,10 +117,6 @@
 
   real(kind=CUSTOM_REAL) :: lambdal,mul,lambdalplus2mul
   real(kind=CUSTOM_REAL) :: kappal
-  
-  ! Scaling factor to bars
-  real(kind=CUSTOM_REAL) :: scaleval,scale_bar
-  
 
 #ifdef FORCE_VECTORIZATION
 ! in this vectorized version we have to assume that N_SLS == 3 in order to be able to unroll and thus suppress
@@ -153,7 +145,7 @@
                                            ispec,NSPEC_STRAIN_ONLY, &
                                            epsilon_trace_over_3,epsilondev_loc)
   endif
-  
+
   !
   ! compute  isotropic  elements
   !
@@ -205,24 +197,6 @@
                                                 sigma_xx,sigma_yy,sigma_zz, &
                                                 sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy, &
                                                 tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3)
-											
-  
-  ! compute norm of stress, strain
-  ! Define scaling factor for stress
-  scaleval = dsqrt(PI*GRAV*RHOAV)
-  scale_bar = (RHOAV/1000.d0)*((R_PLANET*scaleval/1000.d0)**2)*10000.d0
-  
-  DO_LOOP_IJK
-    normsigma_loc(INDEX_IJK)=scale_bar*sqrt(sigma_xx(INDEX_IJK)**2 & 
- 								  + sigma_xy(INDEX_IJK)**2 &
- 								  + sigma_xz(INDEX_IJK)**2 & 
- 								  + sigma_yx(INDEX_IJK)**2 &
- 								  + sigma_yy(INDEX_IJK)**2 &
- 								  + sigma_yz(INDEX_IJK)**2 &
- 								  + sigma_zx(INDEX_IJK)**2 &
- 								  + sigma_zy(INDEX_IJK)**2 &
- 								  + sigma_zz(INDEX_IJK)**2)
-  ENDDO_LOOP_IJK
 
   end subroutine compute_element_iso
 
@@ -412,8 +386,7 @@
                                   epsilon_trace_over_3, &
                                   tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3, &
                                   dummyx_loc,dummyy_loc,dummyz_loc, &
-                                  epsilondev_loc,rho_s_H, &
-								  normsigma_loc)
+                                  epsilondev_loc,rho_s_H)
 
 ! tiso element in crust/mantle
 
@@ -428,8 +401,7 @@
     ATTENUATION_VAL, &
     PARTIAL_PHYS_DISPERSION_ONLY_VAL,GRAVITY_VAL
 
-  use specfem_par, only: COMPUTE_AND_STORE_STRAIN, &
-	PI,GRAV,RHOAV,R_PLANET
+  use specfem_par, only: COMPUTE_AND_STORE_STRAIN
 
 #ifdef FORCE_VECTORIZATION
   use constants, only: NGLLCUBE
@@ -475,9 +447,6 @@
 
   real(kind=CUSTOM_REAL), dimension(NDIM,NGLLX,NGLLY,NGLLZ),intent(inout) :: rho_s_H
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,5),intent(inout) :: epsilondev_loc
-  
-  ! norm of stress and strain
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ),intent(inout) :: normsigma_loc
 
   ! local parameters
   ! the 21 coefficients for an anisotropic medium in reduced notation
@@ -492,10 +461,6 @@
 
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xx,sigma_yy,sigma_zz
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy
-  
-  ! Scaling factor to bars
-  real(kind=CUSTOM_REAL) :: scaleval,scale_bar
-
 
 #ifdef FORCE_VECTORIZATION
 ! in this vectorized version we have to assume that N_SLS == 3 in order to be able to unroll and thus suppress
@@ -522,9 +487,8 @@
                                            duxdyl_plus_duydxl,duzdxl_plus_duxdzl,duzdyl_plus_duydzl, &
                                            ispec,NSPEC_STRAIN_ONLY, &
                                            epsilon_trace_over_3,epsilondev_loc)
-
   endif
-  
+
   !
   ! compute either transversely isotropic elements
   !
@@ -604,25 +568,6 @@
                                                 sigma_xx,sigma_yy,sigma_zz, &
                                                 sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy, &
                                                 tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3)
-												
-  
-  ! Compute norm of stress, strain
-  ! compute norm of stress, strain
-  ! Define scaling factor for stress
-  scaleval = dsqrt(PI*GRAV*RHOAV)
-  scale_bar = (RHOAV/1000.d0)*((R_PLANET*scaleval/1000.d0)**2)*10000.d0
-  
-  DO_LOOP_IJK
-    normsigma_loc(INDEX_IJK)=scale_bar*sqrt(sigma_xx(INDEX_IJK)**2 & 
- 								  + sigma_xy(INDEX_IJK)**2 &
- 								  + sigma_xz(INDEX_IJK)**2 & 
- 								  + sigma_yx(INDEX_IJK)**2 &
- 								  + sigma_yy(INDEX_IJK)**2 &
- 								  + sigma_yz(INDEX_IJK)**2 &
- 								  + sigma_zx(INDEX_IJK)**2 &
- 								  + sigma_zy(INDEX_IJK)**2 &
-	 							  + sigma_zz(INDEX_IJK)**2)
-  ENDDO_LOOP_IJK
 
   end subroutine compute_element_tiso
 
@@ -1044,7 +989,7 @@
                                    epsilon_trace_over_3, &
                                    tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3, &
                                    dummyx_loc,dummyy_loc,dummyz_loc, &
-                                   epsilondev_loc,rho_s_H,normsigma_loc)
+                                   epsilondev_loc,rho_s_H)
 
 ! fully anisotropic element in crust/mantle region
 
@@ -1059,8 +1004,7 @@
     ATTENUATION_VAL, &
     PARTIAL_PHYS_DISPERSION_ONLY_VAL,GRAVITY_VAL
 
-  use specfem_par, only: COMPUTE_AND_STORE_STRAIN, &
-	PI,GRAV,RHOAV,R_PLANET
+  use specfem_par, only: COMPUTE_AND_STORE_STRAIN
 
 #ifdef FORCE_VECTORIZATION
   use constants, only: NGLLCUBE
@@ -1106,9 +1050,6 @@
 
   real(kind=CUSTOM_REAL), dimension(NDIM,NGLLX,NGLLY,NGLLZ),intent(inout) :: rho_s_H
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,5),intent(inout) :: epsilondev_loc
-  
-  ! Compute norm of stress (sigma) and strain (epsilon) per element
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ),intent(inout) :: normsigma_loc
 
   ! local parameters
   ! the 21 coefficients for an anisotropic medium in reduced notation
@@ -1123,10 +1064,6 @@
 
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xx,sigma_yy,sigma_zz
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy
-  
-  ! Scaling factor to bars
-  real(kind=CUSTOM_REAL) :: scaleval,scale_bar
-
 
 #ifdef FORCE_VECTORIZATION
 ! in this vectorized version we have to assume that N_SLS == 3 in order to be able to unroll and thus suppress
@@ -1229,25 +1166,6 @@
                                                 sigma_xx,sigma_yy,sigma_zz, &
                                                 sigma_xy,sigma_xz,sigma_yz,sigma_yx,sigma_zx,sigma_zy, &
                                                 tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3)
-												
-  
-  ! Compute norm of stress, strain
-  ! compute norm of stress, strain
-  ! Define scaling factor for stress
-  scaleval = dsqrt(PI*GRAV*RHOAV)
-  scale_bar = (RHOAV/1000.d0)*((R_PLANET*scaleval/1000.d0)**2)*10000.d0
-  
-  DO_LOOP_IJK
-    normsigma_loc(INDEX_IJK)=scale_bar*sqrt(sigma_xx(INDEX_IJK)**2 & 
- 				 + sigma_xy(INDEX_IJK)**2 &
- 				 + sigma_xz(INDEX_IJK)**2 & 
- 				 + sigma_yx(INDEX_IJK)**2 &
- 				 + sigma_yy(INDEX_IJK)**2 &
-	 			 + sigma_yz(INDEX_IJK)**2 &
- 				 + sigma_zx(INDEX_IJK)**2 &
-	 			 + sigma_zy(INDEX_IJK)**2 &
- 				 + sigma_zz(INDEX_IJK)**2)
-  ENDDO_LOOP_IJK											
 
   end subroutine compute_element_aniso
 

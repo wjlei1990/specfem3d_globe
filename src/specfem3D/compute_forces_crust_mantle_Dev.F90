@@ -40,7 +40,7 @@
                                               epsilondev_xz,epsilondev_yz, &
                                               epsilon_trace_over_3, &
                                               alphaval,betaval,gammaval, &
-                                              factor_common,vnspec,sum_terms,normsigmamax )
+                                              factor_common,vnspec,sum_terms )
 
 ! this routine is optimized for NGLLX = NGLLY = NGLLZ = 5 using the Deville et al. (2002) inlined matrix-matrix products
 
@@ -123,9 +123,6 @@
 
   ! inner/outer element run flag
   integer,intent(in) :: iphase
-  
-  ! Norm of stress (sigma) and strain (epsilon)
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,NSPEC_STR_OR_ATT),intent(inout) :: normsigmamax
 
   ! local parameters
 
@@ -144,9 +141,6 @@
 
   ! for gravity
   real(kind=CUSTOM_REAL), dimension(NDIM,NGLLX,NGLLY,NGLLZ) :: rho_s_H
-  
-  ! Local norm of stress (sigma) and strain (epsilon)
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: normsigma_loc
 
   integer :: ispec,iglob
   integer :: num_elements,ispec_p
@@ -154,7 +148,6 @@
 #ifdef FORCE_VECTORIZATION
   integer :: ijk_spec,ip,iglob_p,ijk
 #endif
-
 
   !integer,parameter :: NGLL2 = NGLLY * NGLLZ
   !integer,parameter :: NGLL3 = NGLLX * NGLLY * NGLLZ
@@ -173,7 +166,6 @@
   endif
 
 ! openmp solver
-! what do these do???
 !$OMP PARALLEL DEFAULT(SHARED) &
 !$OMP SHARED( deriv, &
 !$OMP num_elements,iphase,phase_ispec_inner, &
@@ -189,7 +181,7 @@
 !$OMP factor_common, &
 !$OMP alphaval,betaval,gammaval, &
 !$OMP R_xx,R_yy,R_xy,R_xz,R_yz, &
-!$OMP epsilondev_xx,epsilondev_yy,epsilondev_xy,epsilondev_xz,epsilondev_yz,epsilon_trace_over_3,normsigmamax &
+!$OMP epsilondev_xx,epsilondev_yy,epsilondev_xy,epsilondev_xz,epsilondev_yz,epsilon_trace_over_3, &
 !$OMP gravity_pre_store,gravity_H, &
 !$OMP USE_LDDRK, &
 !$OMP R_xx_lddrk,R_yy_lddrk,R_xy_lddrk,R_xz_lddrk,R_yz_lddrk, &
@@ -207,7 +199,7 @@
 !$OMP tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3, &
 !$OMP newtempx1,newtempx2,newtempx3,newtempy1,newtempy2,newtempy3,newtempz1,newtempz2,newtempz3, &
 !$OMP dummyx_loc,dummyy_loc,dummyz_loc, &
-!$OMP rho_s_H,epsilondev_loc,normsigma_loc )
+!$OMP rho_s_H,epsilondev_loc )
 
 !$OMP DO SCHEDULE(GUIDED)
   do ispec_p = 1,num_elements
@@ -286,7 +278,7 @@
                                  epsilon_trace_over_3, &
                                  tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3, &
                                  dummyx_loc,dummyy_loc,dummyz_loc, &
-                                 epsilondev_loc,rho_s_H,normsigma_loc)
+                                 epsilondev_loc,rho_s_H)
     else
        if (.not. ispec_is_tiso(ispec)) then
           ! isotropic element
@@ -300,7 +292,7 @@
                                    epsilon_trace_over_3, &
                                    tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3, &
                                    dummyx_loc,dummyy_loc,dummyz_loc, &
-                                   epsilondev_loc,rho_s_H,normsigma_loc)
+                                   epsilondev_loc,rho_s_H)
        else
           ! transverse isotropic element
           call compute_element_tiso(ispec, &
@@ -315,7 +307,7 @@
                                     epsilon_trace_over_3, &
                                     tempx1,tempx2,tempx3,tempy1,tempy2,tempy3,tempz1,tempz2,tempz3, &
                                     dummyx_loc,dummyy_loc,dummyz_loc, &
-                                    epsilondev_loc,rho_s_H,normsigma_loc)
+                                    epsilondev_loc,rho_s_H)
        endif ! .not. ispec_is_tiso
     endif
 
@@ -420,24 +412,13 @@
     endif
 
     ! save deviatoric strain for Runge-Kutta scheme
-	if (COMPUTE_AND_STORE_STRAIN) then
+    if (COMPUTE_AND_STORE_STRAIN) then
       epsilondev_xx(:,:,:,ispec) = epsilondev_loc(:,:,:,1)
       epsilondev_yy(:,:,:,ispec) = epsilondev_loc(:,:,:,2)
       epsilondev_xy(:,:,:,ispec) = epsilondev_loc(:,:,:,3)
       epsilondev_xz(:,:,:,ispec) = epsilondev_loc(:,:,:,4)
       epsilondev_yz(:,:,:,ispec) = epsilondev_loc(:,:,:,5)
-	endif 
-	
-	! Add to norm of stress and strain
-    do k = 1,NGLLZ
-      do j = 1,NGLLY
-        do i = 1,NGLLX
-          if (normsigma_loc(i,j,k) >= normsigmamax(i,j,k,ispec)) then
-            normsigmamax(i,j,k,ispec) = normsigma_loc(i,j,k)
-	  endif
-	enddo
-      enddo
-    enddo
+    endif
 
   enddo ! of spectral element loop NSPEC_CRUST_MANTLE
 !$OMP ENDDO
