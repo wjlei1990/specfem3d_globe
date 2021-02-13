@@ -1,6 +1,6 @@
 #=====================================================================
 #
-#          S p e c f e m 3 D  G l o b e  V e r s i o n  8 . 0
+#          S p e c f e m 3 D  G l o b e  V e r s i o n  7 . 0
 #          --------------------------------------------------
 #
 #     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
@@ -91,6 +91,7 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/locate_receivers.solverstatic.o \
 	$O/locate_regular_points.solverstatic.o \
 	$O/locate_sources.solverstatic.o \
+	$O/max_norms.solverstatic.o \
 	$O/multiply_arrays_source.solverstatic.o \
 	$O/noise_tomography.solverstatic.o \
 	$O/prepare_attenuation.solverstatic.o \
@@ -119,6 +120,7 @@ specfem3D_SOLVER_OBJECTS += \
 	$O/specfem3D_par.solverstatic_module.o \
 	$O/update_displacement_LDDRK.solverstatic.o \
 	$O/update_displacement_Newmark.solverstatic.o \
+	$O/write_bin_norms.solverstatic.o \
 	$O/write_movie_output.solverstatic.o \
 	$O/write_movie_volume.solverstatic.o \
 	$O/write_movie_surface.solverstatic.o \
