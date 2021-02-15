@@ -210,19 +210,25 @@
   real(kind=CUSTOM_REAL), dimension(:,:,:,:), allocatable :: tmp_data
   ! bin file name
   character(len=MAX_STRING_LEN) :: outputstrain
+  ! bit-mask
+  logical, dimension(NGLOB_CRUST_MANTLE) :: mask_ibool
   
-  ! Initialize global stress
+  ! Initialize global strain
   maxnormstrain_cm_glob(:)=0  
+  ! Initialize the bit-mask
+  mask_ibool(:) = .false.
   
   ! Local to global mapping
-  ! At shared nodes, take the highest peak norm
   do ispec = 1, NSPEC_CRUST_MANTLE
     do k = 1, NGLLZ
       do j = 1, NGLLY
         do i = 1, NGLLX
           iglob = ibool_crust_mantle(i,j,k,ispec)
-          maxnormstrain_cm_glob(iglob)=max(maxnormstrain_cm(i,j,k,ispec),maxnormstrain_cm_glob(iglob))
-        enddo
+		  if (.not. mask_ibool(iglob)) then
+		    mask_ibool(iglob) = .true.
+			maxnormstrain_cm_glob(iglob)=maxnormstrain_cm(i,j,k,ispec)
+          endif
+		enddo
       enddo
     enddo
   enddo
@@ -274,18 +280,24 @@
   real(kind=CUSTOM_REAL), dimension(:,:,:,:), allocatable :: tmp_data
   ! bin file name
   character(len=MAX_STRING_LEN) :: outputstress
+  ! bit-mask
+  logical, dimension(NGLOB_CRUST_MANTLE) :: mask_ibool
   
   ! Initialize global stress
   maxnormstress_cm_glob(:)=0
+  ! Initialize the bit-mask
+  mask_ibool(:) = .false.
   
   ! Local to global mapping
-  ! At shared nodes, take the highest peak norm
   do ispec = 1, NSPEC_CRUST_MANTLE
     do k = 1, NGLLZ
       do j = 1, NGLLY
         do i = 1, NGLLX
           iglob = ibool_crust_mantle(i,j,k,ispec)
-          maxnormstress_cm_glob(iglob)=max(maxnormstress_cm(i,j,k,ispec),maxnormstress_cm_glob(iglob))
+		  if (.not. mask_ibool(iglob)) then
+		    mask_ibool(iglob) = .true.
+			maxnormstress_cm_glob(iglob)=maxnormstress_cm(i,j,k,ispec)
+          endif
         enddo
       enddo
     enddo
