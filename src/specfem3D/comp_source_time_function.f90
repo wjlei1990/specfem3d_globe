@@ -1,6 +1,6 @@
 !=====================================================================
 !
-!          S p e c f e m 3 D  G l o b e  V e r s i o n  8 . 0
+!          S p e c f e m 3 D  G l o b e  V e r s i o n  7 . 0
 !          --------------------------------------------------
 !
 !     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
@@ -147,9 +147,11 @@
   !          due to the (spatial) discretization of the point source on the mesh
 
   ! Gaussian wavelet
-  a = 1.d0 / (hdur_decay**2)
+  !a = 1.d0 / (hdur_decay**2)
+  a = (PI**2) / (hdur_decay**2)
 
-  comp_source_time_function_gauss = exp(-a * t**2) / (sqrt(PI) * hdur_decay)
+  !comp_source_time_function_gauss = exp(-a * t**2) / (sqrt(PI) * hdur_decay)
+  comp_source_time_function_gauss = (sqrt(PI) / hdur_decay) * exp(-a * t**2) 
 
   end function comp_source_time_function_gauss
 
