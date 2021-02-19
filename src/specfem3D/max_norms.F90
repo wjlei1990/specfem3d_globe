@@ -170,7 +170,7 @@
   real(kind=CUSTOM_REAL), dimension(9,NGLLX,NGLLY,NGLLZ,nspec),intent(in) :: deriv
   
   ! Components of the stress tensor
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ),intent(out) :: sigma_xx,sigma_yy,sigma_zz, &
+  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ),intent(inout) :: sigma_xx,sigma_yy,sigma_zz, &
        sigma_xy,sigma_xz,sigma_yz, &
        sigma_yx,sigma_zx,sigma_zy
 
@@ -626,7 +626,7 @@
     xix,xiy,xiz,etax,etay,etaz,gammax,gammay,gammaz
 	
   ! Components of the stress tensor
-  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ),intent(out) :: sigma_xx,sigma_yy,sigma_zz, &
+  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ),intent(inout) :: sigma_xx,sigma_yy,sigma_zz, &
        sigma_xy,sigma_xz,sigma_yz, &
        sigma_yx,sigma_zx,sigma_zy
   
