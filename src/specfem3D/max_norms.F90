@@ -101,39 +101,57 @@
   real(kind=CUSTOM_REAL), dimension(5,NGLLX,NGLLY,NGLLZ) :: epsilondev_loc_matrix
   real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ) :: eps_trace_over_3_loc_matrix
   
-  integer :: ispec,iglob,i,j,k
+  integer :: ispec,i,j,k
   
   ! Compute the strain from displacement in the crust/mantle
-  do ispec = 1, NSPEC_CRUST_MANTLE_STR_OR_ATT				
-    do k=1, NGLLZ
-      do j=1, NGLLY
-        do i=1, NGLLX
-          epsilon_xx=eps_trace_over_3_crust_mantle(i,j,k,ispec) & 
-						+ epsilondev_xx_crust_mantle(i,j,k,ispec)
-          epsilon_yy=eps_trace_over_3_crust_mantle(i,j,k,ispec) & 
-						+ epsilondev_yy_crust_mantle(i,j,k,ispec)
-          epsilon_zz=eps_trace_over_3_crust_mantle(i,j,k,ispec) &
-					   - epsilondev_xx_crust_mantle(i,j,k,ispec) &
-					   - epsilondev_yy_crust_mantle(i,j,k,ispec)
-          epsilon_xy = epsilondev_xy_crust_mantle(i,j,k,ispec)
-          epsilon_xz = epsilondev_xz_crust_mantle(i,j,k,ispec)
-          epsilon_yz = epsilondev_yz_crust_mantle(i,j,k,ispec)
+  do ispec = 1, NSPEC_CRUST_MANTLE			
+     if (USE_DEVILLE_PRODUCTS_VAL) then
+        call compute_element_strain_undoatt_Dev(ispec,NGLOB_CRUST_MANTLE,NSPEC_CRUST_MANTLE, &
+             displ_crust_mantle,ibool_crust_mantle, &
+             hprime_xx,hprime_xxT, &
+             deriv_mapping_crust_mantle, &
+             epsilondev_loc_matrix,eps_trace_over_3_loc_matrix)
+
+     else
+        call compute_element_strain_undoatt_noDev(ispec,NGLOB_CRUST_MANTLE,NSPEC_CRUST_MANTLE, &
+             displ_crust_mantle, &
+             hprime_xx,hprime_yy,hprime_zz,ibool_crust_mantle, &
+             xix_crust_mantle,xiy_crust_mantle,xiz_crust_mantle, &
+             etax_crust_mantle,etay_crust_mantle,etaz_crust_mantle, &
+             gammax_crust_mantle,gammay_crust_mantle,gammaz_crust_mantle, &
+             epsilondev_loc_matrix,eps_trace_over_3_loc_matrix)
+     endif
 		  
-          ! Compute the norm of strain, and track the maximum norm across all timesteps
-          nstrain_cm=sqrt(epsilon_xx**2 & 
-                + epsilon_yy**2 &
-                + epsilon_zz**2 &
-                + epsilon_xy**2 &
-                + epsilon_xz**2 &
-                + epsilon_yz**2 & 
-                + epsilon_xy**2 &
-                + epsilon_xz**2 &
-                + epsilon_yz**2)
+     ! Compute the norm of strain, and track the maximum norm across all timesteps
+     do k=1, NGLLZ
+        do j=1, NGLLY
+           do i=1, NGLLX
+              epsilon_xx=eps_trace_over_3_loc_matrix(i,j,k) & 
+                   + epsilondev_loc_matrix(1,i,j,k)
+              epsilon_yy=eps_trace_over_3_loc_matrix(i,j,k) & 
+                   + epsilondev_loc_matrix(2,i,j,k)
+              epsilon_zz=eps_trace_over_3_loc_matrix(i,j,k) &
+                   - epsilondev_loc_matrix(1,i,j,k) &
+                   - epsilondev_loc_matrix(2,i,j,k)
+              epsilon_xy = epsilondev_loc_matrix(3,i,j,k)
+              epsilon_xz = epsilondev_loc_matrix(4,i,j,k)
+              epsilon_yz = epsilondev_loc_matrix(5,i,j,k)
+              
+              nstrain_cm=sqrt(epsilon_xx**2 & 
+                   + epsilon_yy**2 &
+                   + epsilon_zz**2 &
+                   + epsilon_xy**2 &
+                   + epsilon_xz**2 &
+                   + epsilon_yz**2 & 
+                   + epsilon_xy**2 &
+                   + epsilon_xz**2 &
+                   + epsilon_yz**2)
 		  
-          maxnormstrain_cm(i,j,k,ispec)=max(nstrain_cm,maxnormstrain_cm(i,j,k,ispec))
+              maxnormstrain_cm(i,j,k,ispec)=max(nstrain_cm,maxnormstrain_cm(i,j,k,ispec))
+           enddo
         enddo
-      enddo
-    enddo
+     enddo
+     
   enddo
   
   

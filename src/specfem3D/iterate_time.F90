@@ -296,9 +296,7 @@
 		  
            ! Compute the strain (global) in the crust and mantle from displacement
            ! and store the peak norms
-           if (COMPUTE_AND_STORE_STRAIN) then
-              call max_norms_strain_cm(nstrain_max_cm)
-           endif
+           call max_norms_strain_cm(nstrain_max_cm)
            call max_norms_stress_cm(nstress_max_cm)
         endif
       endif
@@ -338,9 +336,7 @@
       if (SIMULATION_TYPE == 1) then
         call write_bin_ndispvel(ndispl_max_cm,nveloc_max_cm,ndispl_max_ic,nveloc_max_ic, &
           ndispl_max_oc,nveloc_max_oc)
-        if (COMPUTE_AND_STORE_STRAIN) then	
-          call write_bin_strain_cm(nstrain_max_cm)
-        endif
+        call write_bin_strain_cm(nstrain_max_cm)
         call write_bin_stress_cm(nstress_max_cm)
       endif
     endif
