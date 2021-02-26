@@ -498,13 +498,14 @@
   double precision, external :: comp_source_time_function
   double precision, external :: comp_source_time_function_rickr
   double precision, external :: comp_source_time_function_gauss
+  double precision, external :: comp_source_time_function_gauss_2
   double precision, external :: comp_source_time_function_mono
+  double precision, external :: comp_source_time_function_mars
 
   ! note: calling comp_source_time_function() includes the handling for external source time functions
 
   ! determines source time function value
   if (USE_FORCE_POINT_SOURCE) then
-    ! single point force
     ! single point force
     select case(force_stf(isource))
     case (0)
@@ -521,6 +522,13 @@
       ! Monochromatic source time function
       f0 = 1.d0 / hdur(isource) ! using hdur as a PERIOD just to avoid changing FORCESOLUTION file format
       stf = comp_source_time_function_mono(time_source_dble,f0)
+    case (4)
+      ! Gaussian source time function by Meschede et al. (2011)
+      stf = comp_source_time_function_gauss_2(time_source_dble,hdur(isource))
+	case (5) 
+	  ! Jefferys pulse source time function, from Daubar et al. (2018) based on experiments 
+	  ! by Richardson and Kedar (2013)
+	  stf = comp_source_time_function_mars(time_source_dble,hdur(isource))
     case default
       stop 'unsupported force_stf value!'
     end select

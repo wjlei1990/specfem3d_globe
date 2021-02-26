@@ -1,6 +1,6 @@
 !=====================================================================
 !
-!          S p e c f e m 3 D  G l o b e  V e r s i o n  7 . 0
+!          S p e c f e m 3 D  G l o b e  V e r s i o n  8 . 0
 !          --------------------------------------------------
 !
 !     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
@@ -60,6 +60,11 @@
   double precision, external :: netlib_specfun_erf
 
   ! quasi Heaviside, small Gaussian moment-rate tensor with hdur
+  ! note: netlib_specfun_erf is calculating the (Gauss) error function based on netlib's implementation:
+  !         http://www.netlib.org/specfun/erf
+  !         https://en.wikipedia.org/wiki/Error_function
+  !       the error function erf(x) would be defined between [-1,1], here we scale it to be within [0,1]
+  !       to have a normalized source time function
   comp_source_time_function_heavi = 0.5d0*(1.0d0 + netlib_specfun_erf(t/hdur))
 
   end function comp_source_time_function_heavi
@@ -147,13 +152,72 @@
   !          due to the (spatial) discretization of the point source on the mesh
 
   ! Gaussian wavelet
-  !a = 1.d0 / (hdur_decay**2)
-  a = (PI**2) / (hdur_decay**2)
+  a = 1.d0 / (hdur_decay**2)
 
-  !comp_source_time_function_gauss = exp(-a * t**2) / (sqrt(PI) * hdur_decay)
-  comp_source_time_function_gauss = (sqrt(PI) / hdur_decay) * exp(-a * t**2) 
+  comp_source_time_function_gauss = exp(-a * t**2) / (sqrt(PI) * hdur_decay)
 
   end function comp_source_time_function_gauss
+
+
+!
+!-------------------------------------------------------------------------------------------------
+!
+
+  double precision function comp_source_time_function_gauss_2(t,hdur)
+
+  use constants, only: PI
+
+  implicit none
+
+  double precision, intent(in) :: t,hdur
+
+  ! local parameters
+  double precision :: a
+
+  ! source time function as defined in:
+  ! M.A. Meschede, C.L. Myhrvold and J. Tromp, 2011.
+  ! Antipodal focusing of seismic waves due to large meteorite impacts on Earth,
+  ! GJI, 187, p. 529-537
+  !
+  ! equation (2):
+  ! S(t) = sqrt(pi/tau**2) * exp(-pi**2 * t**2 / tau**2)
+
+  ! factor
+  a = sqrt(PI / hdur**2)
+
+  comp_source_time_function_gauss_2 = a * exp(-PI**2 * t**2 / hdur**2)
+
+  end function comp_source_time_function_gauss_2
+  
+!
+!-------------------------------------------------------------------------------------------------
+!
+    
+  double precision function comp_source_time_function_mars(t,hdur)
+
+  implicit none
+
+  double precision, intent(in) :: t,hdur
+
+  ! local parameters
+  double precision :: alpha
+
+  ! Jefferys Pulse source time function as defined in:
+  ! Daubar, Ingrid and Lognonné, Philippe and Teanby, Nicholas A.,... [et al.] 
+  ! Impact-Seismic Investigations of the InSight Mission. (2018) 
+  ! Space Science Reviews, 214 (132). 1-68. ISSN 0038-630
+  !
+  ! equation :
+  ! S(t) = (alpha)**2 * t * exp(-alpha * t)
+  !
+  ! where alpha is the "characteristic decay time", with units of 1/s
+
+  ! factor
+  alpha = 1.d0 / (hdur)
+
+  comp_source_time_function_mars = (alpha)**2 * t * exp(-alpha * t)
+
+  end function comp_source_time_function_mars
 
 !
 !-------------------------------------------------------------------------------------------------
