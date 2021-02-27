@@ -218,17 +218,17 @@
   ! Initialize the bit-mask
   mask_ibool(:) = .false.
   
-  ! Local to global mapping
+  ! Local to global mapping---ignore
   do ispec = 1, NSPEC_CRUST_MANTLE
     do k = 1, NGLLZ
       do j = 1, NGLLY
         do i = 1, NGLLX
           iglob = ibool_crust_mantle(i,j,k,ispec)
-		  if (.not. mask_ibool(iglob)) then
-		    mask_ibool(iglob) = .true.
-			maxnormstrain_cm_glob(iglob)=maxnormstrain_cm(i,j,k,ispec)
+          if (.not. mask_ibool(iglob)) then
+             mask_ibool(iglob) = .true.
+             maxnormstrain_cm_glob(iglob)=maxnormstrain_cm(i,j,k,ispec)
           endif
-		enddo
+        enddo
       enddo
     enddo
   enddo
@@ -241,7 +241,8 @@
       do j = 1, NGLLY
         do i = 1, NGLLX
           iglob = ibool_crust_mantle(i,j,k,ispec)
-          tmp_data(i,j,k,ispec) = maxnormstrain_cm_glob(iglob) 
+          ! local to global mapping in combine_vol_data
+          tmp_data(i,j,k,ispec) = maxnormstrain_cm(i,j,k,ispec)
         enddo
       enddo
     enddo
@@ -288,15 +289,15 @@
   ! Initialize the bit-mask
   mask_ibool(:) = .false.
   
-  ! Local to global mapping
+  ! Local to global mapping---ignore
   do ispec = 1, NSPEC_CRUST_MANTLE
     do k = 1, NGLLZ
       do j = 1, NGLLY
         do i = 1, NGLLX
           iglob = ibool_crust_mantle(i,j,k,ispec)
-		  if (.not. mask_ibool(iglob)) then
-		    mask_ibool(iglob) = .true.
-			maxnormstress_cm_glob(iglob)=maxnormstress_cm(i,j,k,ispec)
+          if (.not. mask_ibool(iglob)) then
+             mask_ibool(iglob) = .true.
+             maxnormstress_cm_glob(iglob)=maxnormstress_cm(i,j,k,ispec)
           endif
         enddo
       enddo
@@ -311,7 +312,8 @@
       do j = 1, NGLLY
         do i = 1, NGLLX
           iglob = ibool_crust_mantle(i,j,k,ispec)
-          tmp_data(i,j,k,ispec) = maxnormstress_cm_glob(iglob) 
+          ! local to global mapping in combine_vol_data
+          tmp_data(i,j,k,ispec) = maxnormstress_cm(i,j,k,ispec)
         enddo
       enddo
     enddo
