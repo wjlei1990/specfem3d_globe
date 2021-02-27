@@ -417,9 +417,9 @@
 
      ! Cartesian components of gradient of gravitational acceleration
      ! get displacement and multiply by density to compute G tensor
-     sx_l = displ_crust_mantle(1,iglob)
-     sy_l = displ_crust_mantle(2,iglob)
-     sz_l = displ_crust_mantle(3,iglob)
+     sx_l = displ(1,iglob)
+     sy_l = displ(2,iglob)
+     sz_l = displ(3,iglob)
      
      ! compute G tensor from s . g and add to sigma (not symmetric)
      sigma_xxl = sigma_xxl + sy_l * gyl + sz_l * gzl
@@ -904,9 +904,9 @@
            
            ! Cartesian components of gradient of gravitational acceleration
            ! get displacement and multiply by density to compute G tensor
-           sx_l = displ_crust_mantle(1,iglob)
-           sy_l = displ_crust_mantle(2,iglob)
-           sz_l = displ_crust_mantle(3,iglob)
+           sx_l = displ(1,iglob)
+           sy_l = displ(2,iglob)
+           sz_l = displ(3,iglob)
            
            ! compute G tensor from s . g and add to sigma (not symmetric)
            sigma_xxl = sigma_xxl + sy_l * gyl + sz_l * gzl
