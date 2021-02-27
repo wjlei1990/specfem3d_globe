@@ -177,6 +177,16 @@
       if (hdur(isource) < TINYVAL ) then
         stop 'Error set force period, make sure all forces have a non-zero period'
       endif
+    case (4)
+      ! Gaussian by Meschede et al. (2011)
+      ! null half-duration indicates a Dirac
+      ! replace with very short Gaussian function
+      if (hdur(isource) < 5. * DT ) hdur(isource) = 5. * DT
+	case (5)
+	  ! Jefferys pulse source time function, from Daubar et al. (2018) based on experiments 
+	  ! by Richardson and Kedar (2013)
+	  ! Implement the same as above for the Gaussian function:
+	  if (hdur(isource) < 5. * DT ) hdur(isource) = 5. * DT
     case default
       stop 'unsupported force_stf value!'
     end select

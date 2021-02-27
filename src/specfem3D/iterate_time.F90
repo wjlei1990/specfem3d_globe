@@ -1,6 +1,6 @@
 !=====================================================================
 !
-!          S p e c f e m 3 D  G l o b e  V e r s i o n  8 . 0
+!          S p e c f e m 3 D  G l o b e  V e r s i o n  7 . 0
 !          --------------------------------------------------
 !
 !     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
@@ -27,6 +27,10 @@
 !
 ! United States and French Government Sponsorship Acknowledged.
 
+! we switch between vectorized and non-vectorized version by using pre-processor flag FORCE_VECTORIZATION
+! and macros INDEX_IJK, DO_LOOP_IJK, ENDDO_LOOP_IJK defined in config.fh
+#include "config.fh"
+
   subroutine iterate_time()
 
   use specfem_par
@@ -39,9 +43,37 @@
 
   ! timing
   double precision, external :: wtime
+  
+  ! Track maximum norm of displacement, velocity in crust/mantle, 
+  ! outer core, and inner core
+  ! Only works in the CPU version of the code
+  real(kind=CUSTOM_REAL), dimension(NGLOB_CRUST_MANTLE) :: ndispl_max_cm,nveloc_max_cm
+  real(kind=CUSTOM_REAL), dimension(NGLOB_INNER_CORE) :: ndispl_max_ic,nveloc_max_ic
+  real(kind=CUSTOM_REAL), dimension(NGLOB_OUTER_CORE) :: ndispl_max_oc,nveloc_max_oc
+  
+  ! Track maximum norm of strain and stress in the crust/mantle at the element level
+  ! Only works in the CPU version of the code
+  real(kind=CUSTOM_REAL), dimension(NGLLX,NGLLY,NGLLZ,NSPEC_CRUST_MANTLE) :: nstrain_max_cm,nstress_max_cm
+  
+  ! Do we want to track the peak norm values?
+  logical :: GET_PEAK_NORMS
+  
 
   ! for EXACT_UNDOING_TO_DISK
   integer :: ispec,iglob,i,j,k
+  
+  
+  ! Initialize variables
+  ndispl_max_cm(:)=0
+  nveloc_max_cm(:)=0
+  ndispl_max_ic(:)=0
+  nveloc_max_ic(:)=0
+  ndispl_max_oc(:)=0
+  nveloc_max_oc(:)=0
+  nstress_max_cm(:,:,:,:)=0
+  nstrain_max_cm(:,:,:,:)=0
+  GET_PEAK_NORMS = .true. 
+  
 
   !----  create a Gnuplot script to display the energy curve in log scale
   if (OUTPUT_ENERGY .and. myrank == 0) then
@@ -253,6 +285,22 @@
     if (VTK_MODE) then
       call it_update_vtkwindow()
     endif
+	
+    ! Call subroutine to compute the maximum norms of displacement and velocity
+    ! Only for CPU version
+    if (.not. GPU_MODE) then
+      if (GET_PEAK_NORMS) then
+        if (SIMULATION_TYPE == 1) then
+           call max_norms_dispvel(ndispl_max_cm,nveloc_max_cm,ndispl_max_ic,nveloc_max_ic, &
+                ndispl_max_oc,nveloc_max_oc)
+		  
+           ! Compute the strain (global) in the crust and mantle from displacement
+           ! and store the peak norms
+           call max_norms_strain_cm(nstrain_max_cm)
+           call max_norms_stress_cm(nstress_max_cm)
+        endif
+      endif
+    endif
 
   !
   !---- end of time iteration loop
@@ -278,6 +326,22 @@
 
 !----  close energy file
   if (OUTPUT_ENERGY .and. myrank == 0) close(IOUT_ENERGY)
+  
+  
+  ! Write the peak values for norm displacement, velocity to .bin files, which can be
+  ! converted to VTK using xcombine_vol_data_vtk
+  ! Only for CPU version
+  if (.not. GPU_MODE) then
+    if (GET_PEAK_NORMS) then
+      if (SIMULATION_TYPE == 1) then
+        call write_bin_ndispvel(ndispl_max_cm,nveloc_max_cm,ndispl_max_ic,nveloc_max_ic, &
+          ndispl_max_oc,nveloc_max_oc)
+        call write_bin_strain_cm(nstrain_max_cm)
+        call write_bin_stress_cm(nstress_max_cm)
+      endif
+    endif
+  endif
+  
 
   end subroutine iterate_time
 

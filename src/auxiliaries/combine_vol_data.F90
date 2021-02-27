@@ -1,6 +1,6 @@
 !=====================================================================
 !
-!          S p e c f e m 3 D  G l o b e  V e r s i o n  8 . 0
+!          S p e c f e m 3 D  G l o b e  V e r s i o n  7 . 0
 !          --------------------------------------------------
 !
 !     Main historical authors: Dimitri Komatitsch and Jeroen Tromp
@@ -80,7 +80,7 @@ program combine_vol_data
 
   ! instead of taking the first value which appears for a global point, average the values
   ! if there are more than one GLL points for a global point (points on element corners, edges, faces)
-  logical,parameter:: AVERAGE_GLOBALPOINTS = .false.
+  logical,parameter:: AVERAGE_GLOBALPOINTS = .true.
 
   integer, dimension(:), allocatable :: ibool_count
   real(kind=CUSTOM_REAL), dimension(:), allocatable :: data_avg
@@ -126,7 +126,7 @@ program combine_vol_data
   character(len=MAX_STRING_LEN) :: value_file_name, mesh_file_name
   integer,parameter :: MAX_NUM_NODES = 2000
 #else
-  integer :: iregion,proc_id
+  integer :: iregion,njunk
   character(len=MAX_STRING_LEN) :: prname_topo, prname_file, dimension_file
   character(len=MAX_STRING_LEN) :: in_file_dir, in_topo_dir
   character(len=MAX_STRING_LEN) :: sline,slice_list_name
@@ -269,7 +269,7 @@ program combine_vol_data
     do while (1 == 1)
       read(IIN,'(a)',iostat=ier) sline
       if (ier /= 0) exit
-      read(sline,*,iostat=ier) proc_id
+      read(sline,*,iostat=ier) njunk
       if (ier /= 0) exit
       num_node = num_node + 1
     enddo
@@ -286,10 +286,10 @@ program combine_vol_data
     do while (1 == 1)
       read(IIN,'(a)',iostat=ier) sline
       if (ier /= 0) exit
-      read(sline,*,iostat=ier) proc_id
+      read(sline,*,iostat=ier) njunk
       if (ier /= 0) exit
       num_node = num_node + 1
-      node_list(num_node) = proc_id
+      node_list(num_node) = njunk
     enddo
     close(IIN)
   endif

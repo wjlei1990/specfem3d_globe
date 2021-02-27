@@ -820,6 +820,14 @@
       case (3)
         ! Monochromatic
         t0 = 0.d0
+      case (4)
+        ! Gaussian source time function by Meschede et al. (2011)
+        t0 = min(t0,1.5d0 * (tshift_src(isource) - hdur(isource)))
+	  case (5)
+	    ! Jefferys pulse source time function, from Daubar et al. (2018) based on experiments 
+	    ! by Richardson and Kedar (2013)
+	    ! Implement the same as above for the Gaussian function:
+        t0 = min(t0,1.5d0 * (tshift_src(isource) - hdur(isource)))
       case default
         stop 'unsupported force_stf value!'
       end select
@@ -2005,4 +2013,3 @@
   enddo
 
   end subroutine setup_sources_receivers_intp
-
